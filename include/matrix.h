@@ -1,0 +1,84 @@
+//
+//  matrix.h
+//  ImageProcessors
+//
+//  Created by Gianmarco Stinchi on 02/10/15.
+//  Copyright © 2015 Gianmarco Stinchi. All rights reserved.
+//
+
+#ifndef matrix_h
+#define matrix_h
+
+#include <stdbool.h>
+
+//Definizione della struttura della matrice
+typedef struct Matrix
+{
+    int w,h;        //dimensione
+    double **buffer;   //contiene i numeri della matrice
+}
+Matrix;
+
+//autovalori matrice 2x2
+typedef struct Eigenvalues2x2
+{
+    bool   success;
+    double lambda1;
+    double lambda2;
+}
+Eigenvalues2x2;
+
+//autovettori matrice 2x2
+typedef struct Eigenvectors2x2
+{
+    bool    success;
+    Matrix* v1;
+    Matrix* v2;
+}
+Eigenvctors2x2;
+
+//Allocazione dinamica del tipo matrice
+Matrix* matrix_alloc(int w,int h);
+//Alloca una matrice di identità
+Matrix* matrix_identity(int w,int h);
+//Alloca una matrice diagonale
+Matrix* matrix_diagonal(int w,int h,double value);
+//copia la matrice
+Matrix* matrix_copy(Matrix* in);
+//Moltiplicazione Matrice Matrice
+Matrix* matrix_multiply(const Matrix* a, const Matrix* b);
+//Moltiplicazione Matrice per scalare
+Matrix* matrix_multiply_to_scalar(const Matrix* a, double scalar);
+//Moltiplicazione Matrice per scalare
+void matrix_multiply_to_scalar_inplace(Matrix* a, double scalar);
+//Imposta tutti i valori della matrice
+void matrix_set(Matrix* in,int x,int y,double val);
+//restituisce tutti i valori della matrice
+double matrix_get(const Matrix* in,int x,int y);
+//restituisce tutti i valori della matrice (sicuro)
+double matrix_get_safe(const Matrix* in,int x,int y);
+//get normalize value
+double matrix_get_safe_norm(const Matrix* in,int x,int y);
+//Libera memoria allocata
+void matrix_free(Matrix* in);
+//legge da file gimp
+Matrix* matrix_from_gimp_file (char *filename);
+//salva matrice nel formato desiderato
+void matrix_save_only_buffer(const char* path, const Matrix* in);
+//print matrix
+void matrix_print(const Matrix* in);
+//calcolo eigenvalues (autovalori) 2x2
+Eigenvalues2x2 matrix_eigenvalues2x2(Matrix* in);
+//calcolo degli autovettori su matrice 2x2
+Eigenvctors2x2 matrix_eigenvectors2x2(Matrix* in);
+//calcolo degli autovettori su matrice 2x2 e li normalizza
+Eigenvctors2x2 matrix_eigenvectors2x2_normalized(Matrix* in);
+//Libera memoria allocata
+void eigenvctors2x2_free(Eigenvctors2x2 values);
+//Normalizzazione vettore
+Matrix* matrix_column_normalized(const Matrix* in, int icolumn);
+//normalizza il vettore dato
+void matrix_column_normalized_inplace(Matrix* inout, int icolumn);
+//Trasposta matrice
+Matrix* matrix_transpose(Matrix* in);
+#endif /* matrix_h */
