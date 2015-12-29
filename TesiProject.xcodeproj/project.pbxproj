@@ -25,6 +25,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		E012C0721C32EB17006A0B56 /* D.tga */ = {isa = PBXFileReference; lastKnownFileType = file; path = D.tga; sourceTree = "<group>"; };
+		E012C0731C32EB17006A0B56 /* img11.tga */ = {isa = PBXFileReference; lastKnownFileType = file; path = img11.tga; sourceTree = "<group>"; };
+		E012C0741C32EB17006A0B56 /* img12.tga */ = {isa = PBXFileReference; lastKnownFileType = file; path = img12.tga; sourceTree = "<group>"; };
+		E012C0751C32EB17006A0B56 /* test2.tga */ = {isa = PBXFileReference; lastKnownFileType = file; path = test2.tga; sourceTree = "<group>"; };
 		E0BBA6761C31881200FA5945 /* TesiProject */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TesiProject; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0BBA6811C31888300FA5945 /* gerace_prova.pgm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = gerace_prova.pgm; sourceTree = "<group>"; };
 		E0BBA6821C31888300FA5945 /* Homer.pgm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Homer.pgm; sourceTree = "<group>"; };
@@ -68,6 +72,10 @@
 		E0BBA6801C31888300FA5945 /* assets */ = {
 			isa = PBXGroup;
 			children = (
+				E012C0721C32EB17006A0B56 /* D.tga */,
+				E012C0731C32EB17006A0B56 /* img11.tga */,
+				E012C0741C32EB17006A0B56 /* img12.tga */,
+				E012C0751C32EB17006A0B56 /* test2.tga */,
 				E0BBA68A1C318F5100FA5945 /* rosso.pgm */,
 				E0BBA6811C31888300FA5945 /* gerace_prova.pgm */,
 				E0BBA6821C31888300FA5945 /* Homer.pgm */,
@@ -273,6 +281,7 @@
 				E0BBA67F1C31881200FA5945 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

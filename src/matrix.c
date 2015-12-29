@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
+#include <assert.h>
 #include <math.h>
 
 //Allocazione dinamica del tipo matrice
@@ -42,6 +43,89 @@ Matrix* matrix_identity(int w,int h)
     for(int xy=0;xy!=mwh;++xy)
         matrix_set(output, xy, xy, 1.0);
     //return matrix
+    return output;
+}
+//quick sort
+static void quick_sort_aux(double array[], int begin, int end)
+{
+    #define SWAP(a,b) { double _temp=a; a=b; b=_temp; }
+    double pivot = 0.0;
+    int l = 0;
+    int r = 0;
+    if (end > begin)
+    {
+        pivot = array[begin];
+        l = begin + 1;
+        r = end+1;
+        while(l < r)
+        {
+            if (array[l] < pivot)
+            {
+                l++;
+            }
+            else
+            {
+                r--;
+                SWAP(array[l], array[r]);
+            }
+        }
+        l--;
+        SWAP(array[begin], array[l]);
+        quick_sort_aux(array, begin, l);
+        quick_sort_aux(array, r, end);
+    }
+}
+static void quick_sort( Matrix* matrix, int col )
+{
+    quick_sort_aux(matrix->buffer[col],0,matrix->h-1);
+}
+//Media moda
+double matrix_mode_row(const Matrix* a,int row)
+{
+    //assert...
+    assert(a->w);
+    //alloc
+    Matrix* tmp_m = matrix_alloc(1, a->w);
+    //copy
+    for(int x=0;x!=a->w;++x)
+    {
+        matrix_set(tmp_m,0,x,matrix_get(a,x,row));
+    }
+    //sort
+    quick_sort(tmp_m,0);
+    //comput mode
+    size_t count      = 1;
+    double output     = matrix_get(tmp_m,0,0);
+    size_t tmp_count  = 0;
+    double tmp_output = matrix_get(tmp_m,0,0);
+    
+    for(int y=1;y!=tmp_m->h;++y)
+    {
+        if( tmp_output == matrix_get(tmp_m,0,y) )
+        {
+            ++tmp_count;
+        }
+        else
+        {
+            if( tmp_count > count )
+            {
+                count  = tmp_count;
+                output = tmp_output;
+            }
+            //release
+            tmp_count  = 1;
+            tmp_output = matrix_get(tmp_m,0,y);
+        }
+    }
+    //last case
+    if( tmp_count > count )
+    {
+        count  = tmp_count;
+        output = tmp_output;
+    }
+    //free
+    matrix_free(tmp_m);
+    //return
     return output;
 }
 //alloca una matrice diagonale
@@ -87,6 +171,51 @@ Matrix* matrix_multiply(const Matrix* a, const Matrix* b)
     }
     return output;
 }
+//Somma Matrice Matrice
+Matrix* matrix_sum(const Matrix* a, const Matrix* b)
+{
+    if(a->w != b->w) return NULL;
+    if(a->h != b->h) return NULL;
+    
+    Matrix* output = matrix_alloc(a->w, a->h);
+    
+    for(int y=0;y!=output->h;++y)
+    for(int x=0;x!=output->w;++x)
+    {
+        matrix_set(output, x, y, matrix_get(a, x, y) + matrix_get(b, x, y) );
+    }
+    
+    return output;
+}
+//matrix to vector
+Matrix* matrix_to_vector(const Matrix* in)
+{
+    Matrix* output = matrix_alloc(in->w*in->h, 1);
+    
+    for(int y=0;y!=in->h;++y)
+    for(int x=0;x!=in->w;++x)
+    {
+        matrix_set(output, x+y*in->w, 0, matrix_get(in,x,y));
+    }
+    
+    return output;
+}
+//row vector to matrix
+Matrix* matrix_from_vector(const Matrix* in, int row,int w,int h)
+{
+    //filter
+    if(w*h > in->w) return NULL;
+    //alloc matrix
+    Matrix* output = matrix_alloc(w,h);
+    
+    for(int y=0;y!=w;++y)
+    for(int x=0;x!=h;++x)
+    {
+        matrix_set(output, x, y, matrix_get(in,x+y*w,row));
+    }
+    
+    return output;
+}
 //Moltiplicazione Matrice pre scalare
 Matrix* matrix_multiply_to_scalar(const Matrix* a, double scalar)
 {
@@ -107,6 +236,28 @@ void matrix_multiply_to_scalar_inplace(Matrix* a, double scalar)
     for (int x = 0; x != a->w; ++x)
     {
         matrix_set(a, x, y, matrix_get(a, x, y) * scalar);
+    }
+}
+//Somma uno scalare
+Matrix* matrix_sum_scalar(const Matrix* a, double scalar)
+{
+    Matrix* output = matrix_alloc(a->w, a->h);
+    
+    for (int y = 0; y != output->h; ++y)
+    for (int x = 0; x != output->w; ++x)
+    {
+        matrix_set(output, x, y, matrix_get(a, x, y) + scalar);
+    }
+    
+    return output;
+}
+//Somma uno scalare
+void matrix_sum_scalar_inplace(Matrix* a, double scalar)
+{
+    for (int y = 0; y != a->h; ++y)
+    for (int x = 0; x != a->w; ++x)
+    {
+        matrix_set(a, x, y, matrix_get(a, x, y) + scalar);
     }
 }
 //Imposta tutti i valori della matrice

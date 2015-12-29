@@ -47,8 +47,20 @@ Matrix* matrix_diagonal(int w,int h,double value);
 Matrix* matrix_copy(Matrix* in);
 //Moltiplicazione Matrice Matrice
 Matrix* matrix_multiply(const Matrix* a, const Matrix* b);
+//Somma Matrice Matrice
+Matrix* matrix_sum(const Matrix* a, const Matrix* b);
+//Media moda
+double matrix_mode_row(const Matrix* a,int row);
+//matrix to vector
+Matrix* matrix_to_vector(const Matrix* in);
+//row vector to matrix
+Matrix* matrix_from_vector(const Matrix* in, int row,int w,int h);
 //Moltiplicazione Matrice per scalare
 Matrix* matrix_multiply_to_scalar(const Matrix* a, double scalar);
+//Somma uno scalare
+Matrix* matrix_sum_scalar(const Matrix* a, double scalar);
+//Somma uno scalare
+void matrix_sum_scalar_inplace(Matrix* a, double scalar);
 //Moltiplicazione Matrice per scalare
 void matrix_multiply_to_scalar_inplace(Matrix* a, double scalar);
 //Imposta tutti i valori della matrice

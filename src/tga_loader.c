@@ -36,7 +36,7 @@ ASPACKED(struct TgaHeader
     Byte  descriptor;              // image descriptor bits (vh flip bits)
 });
 
-RGB_Matrix matrix_from_tga_file(const char* filepath)
+RGB_Matrix rgb_matrix_from_tga_file(const char* filepath)
 {
     RGB_Matrix output;
     output.success  = false;
@@ -112,7 +112,7 @@ RGB_Matrix matrix_from_tga_file(const char* filepath)
 }
 
 
-bool matrix_to_tga_file(const char* filepath,RGB_Matrix rgb_matrix)
+bool rgb_matrix_to_tga_file(const char* filepath,RGB_Matrix rgb_matrix)
 {
     //image struct
     struct TgaHeader header;
@@ -165,6 +165,73 @@ RGB_Matrix RGB_Matrix_init(Matrix* matrix_r,Matrix* matrix_g,Matrix* matrix_b)
     output.matrix_r = matrix_r;
     output.matrix_g = matrix_g;
     output.matrix_b = matrix_b;
+    return output;
+}
+
+RGB_Matrix rgb_matrix_copy(RGB_Matrix rgb_matrix)
+{
+    RGB_Matrix output_rgb_matrix = rgb_matrix;
+    output_rgb_matrix.matrix_r = matrix_copy(rgb_matrix.matrix_r);
+    output_rgb_matrix.matrix_g = matrix_copy(rgb_matrix.matrix_g);
+    output_rgb_matrix.matrix_b = matrix_copy(rgb_matrix.matrix_b);
+    return output_rgb_matrix;
+}
+
+RGB_Matrix rgb_matrix_inverse(RGB_Matrix rgb_matrix)
+{
+    RGB_Matrix output = rgb_matrix_copy(rgb_matrix);
+    
+    for(int y=0;y!=output.matrix_r->h;++y)
+    for(int x=0;x!=output.matrix_r->w;++x)
+    {
+        matrix_set(output.matrix_r, x, y, 255.0-matrix_get(output.matrix_r, x, y));
+        matrix_set(output.matrix_g, x, y, 255.0-matrix_get(output.matrix_g, x, y));
+        matrix_set(output.matrix_b, x, y, 255.0-matrix_get(output.matrix_b, x, y));
+    }
+    
+    return output;
+}
+
+Matrix* r_matrix_inverse(Matrix* r_matrix)
+{
+    Matrix* output = matrix_copy(r_matrix);
+    
+    for(int y=0;y!=output->h;++y)
+    for(int x=0;x!=output->w;++x)
+    {
+        matrix_set(output, x, y, 255.0-matrix_get(r_matrix, x, y));
+    }
+    
+    return output;
+}
+
+RGB_Matrix rgb_matrix_normalize(RGB_Matrix rgb_matrix)
+{
+    RGB_Matrix output = rgb_matrix_copy(rgb_matrix);
+    
+    for(int y=0;y!=output.matrix_r->h;++y)
+        for(int x=0;x!=output.matrix_r->w;++x)
+        {
+            matrix_set(output.matrix_r, x, y, matrix_get(output.matrix_r, x, y) / 255.0);
+            matrix_set(output.matrix_g, x, y, matrix_get(output.matrix_g, x, y) / 255.0);
+            matrix_set(output.matrix_b, x, y, matrix_get(output.matrix_b, x, y) / 255.0);
+        }
+    
+    return output;
+}
+
+RGB_Matrix rgb_matrix_denormalize(RGB_Matrix rgb_matrix)
+{
+    RGB_Matrix output = rgb_matrix_copy(rgb_matrix);
+    
+    for(int y=0;y!=output.matrix_r->h;++y)
+    for(int x=0;x!=output.matrix_r->w;++x)
+    {
+        matrix_set(output.matrix_r, x, y, matrix_get(output.matrix_r, x, y) * 255.0);
+        matrix_set(output.matrix_g, x, y, matrix_get(output.matrix_g, x, y) * 255.0);
+        matrix_set(output.matrix_b, x, y, matrix_get(output.matrix_b, x, y) * 255.0);
+    }
+    
     return output;
 }
 
