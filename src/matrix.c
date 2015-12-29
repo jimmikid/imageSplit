@@ -45,39 +45,36 @@ Matrix* matrix_identity(int w,int h)
     //return matrix
     return output;
 }
-//quick sort
-static void quick_sort_aux(double array[], int begin, int end)
+//merge sort
+static void merge_aux(int *a, int n, int m)
 {
-    #define SWAP(a,b) { double _temp=a; a=b; b=_temp; }
-    double pivot = 0.0;
-    int l = 0;
-    int r = 0;
-    if (end > begin)
-    {
-        pivot = array[begin];
-        l = begin + 1;
-        r = end+1;
-        while(l < r)
-        {
-            if (array[l] < pivot)
-            {
-                l++;
-            }
-            else
-            {
-                r--;
-                SWAP(array[l], array[r]);
-            }
-        }
-        l--;
-        SWAP(array[begin], array[l]);
-        quick_sort_aux(array, begin, l);
-        quick_sort_aux(array, r, end);
-    }
+	int i, j, k;
+	int *x = malloc(n * sizeof(int));
+	for (i = 0, j = m, k = 0; k < n; k++) 
+	{
+		x[k] = j == n ? a[i++]
+			: i == m ? a[j++]
+			: a[j] < a[i] ? a[j++]
+			: a[i++];
+	}
+	for (i = 0; i < n; i++) 
+	{
+		a[i] = x[i];
+	}
+	free(x);
 }
-static void quick_sort( Matrix* matrix, int col )
+static void merge_sort_aux(int *a, int n)
 {
-    quick_sort_aux(matrix->buffer[col],0,matrix->h-1);
+	if (n < 2) return;
+	int m = n / 2;
+	merge_sort_aux(a, m);
+	merge_sort_aux(a + m, n - m);
+	merge_aux(a, n, m);
+}
+
+static void merge_sort(Matrix* matrix, int col)
+{
+	merge_sort_aux(matrix->buffer[col], matrix->h);
 }
 //Media moda
 double matrix_mode_row(const Matrix* a,int row)
@@ -92,7 +89,7 @@ double matrix_mode_row(const Matrix* a,int row)
         matrix_set(tmp_m,0,x,matrix_get(a,x,row));
     }
     //sort
-    quick_sort(tmp_m,0);
+	merge_sort(tmp_m,0);
     //comput mode
     size_t count      = 1;
     double output     = matrix_get(tmp_m,0,0);
