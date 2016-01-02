@@ -125,6 +125,36 @@ double matrix_mode_row(const Matrix* a,int row)
     //return
     return output;
 }
+//fattorizazione di cholesky
+Matrix* matrix_cholesky_factorization(const Matrix* a)
+{
+    if(a->w!=a->h) return NULL;
+    Matrix* L = matrix_alloc(a->w,a->w);
+    
+    for (int i = 0; i != a->w; ++i)
+    {
+        for (int j = 0; j < (i+1); ++j)
+        {
+            double s = 0;
+            
+            for (int k = 0; k < j; ++k)
+            {
+                s += matrix_get(L, k, i) *  matrix_get(L, k, j);
+                /* s += L[i * n + k] * L[j * n + k]; */
+            }
+            
+            matrix_set(L, j, i,  (i == j) ?
+                       sqrt(matrix_get(a, i, i)-s) :
+                       1.0/ matrix_get(L, j, j) * (matrix_get(a, j, i)-s));
+            /*
+             L[i * n + j] = (i == j) ?
+             sqrt(A[i * n + i] - s) :
+             (1.0 / L[j * n + j] * (A[i * n + j] - s));
+            */
+        }
+    }
+    return L;
+}
 //alloca una matrice diagonale
 Matrix* matrix_diagonal(int w,int h,double value)
 {
