@@ -39,6 +39,8 @@ Eigenvctors2x2;
 
 //Allocazione dinamica del tipo matrice
 Matrix* matrix_alloc(int w,int h);
+//Alloca ed inizializza da un array di double
+Matrix* matrix_init(double* values,int w,int h);
 //Alloca una matrice di identità
 Matrix* matrix_identity(int w,int h);
 //Alloca una matrice diagonale

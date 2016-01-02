@@ -31,6 +31,27 @@ int main()
     return 0;
 }
 
+#elif 0
+int main()
+{
+    //values
+    double v[] = {
+                   18, 22,  54,  42,
+                   22, 70,  86,  62,
+                   54, 86, 174, 134,
+                   42, 62, 134, 106
+                 };
+    //init matrix
+    Matrix* m=matrix_init(v, 4, 4);
+    //execute cholesky factorization
+    Matrix* l=matrix_cholesky_factorization(m);
+    //print all
+    printf("\nMatrix:\n");
+    matrix_print(m);
+    printf("\nCholesky factorization:\n");
+    matrix_print(l);
+    return 0;
+}
 #elif 1
 
 void diff_images(Matrix* s[2],

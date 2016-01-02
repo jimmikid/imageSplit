@@ -31,7 +31,17 @@ Matrix* matrix_alloc(int w,int h)
     }
     return output;
 }
-
+//Alloca ed inizializza da un array di double
+Matrix* matrix_init(double* values,int w,int h)
+{
+    Matrix* output = matrix_alloc(w,h);
+    for(int x=0;x!=w;++x)
+    for(int y=0;y!=h;++y)
+    {
+        matrix_set(output, x, y, values[y*w+x]);
+    }
+    return output;
+}
 //Alloca una matrice di identità
 Matrix* matrix_identity(int w,int h)
 {
