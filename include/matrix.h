@@ -37,16 +37,29 @@ typedef struct Eigenvectors2x2
 }
 Eigenvctors2x2;
 
+//v/d eig, like mathlab
+typedef struct Eigen2x2
+{
+	bool    success;
+	Matrix* V;
+	Matrix* D;
+}
+Eigen2x2;
+
 //Allocazione dinamica del tipo matrice
 Matrix* matrix_alloc(int w,int h);
 //Alloca ed inizializza da un array di double
 Matrix* matrix_init(double* values,int w,int h);
+//create a rotation matrix
+Matrix* matrix_rotate(double alpha);
 //Alloca una matrice di identità
-Matrix* matrix_identity(int w,int h);
+Matrix* matrix_identity(int w, int h);
+//Alloca una matrice sqrt(in)
+Matrix* matrix_sqrt(const Matrix* in);
 //Alloca una matrice diagonale
 Matrix* matrix_diagonal(int w,int h,double value);
 //copia la matrice
-Matrix* matrix_copy(Matrix* in);
+Matrix* matrix_copy(const Matrix* in);
 //Moltiplicazione Matrice Matrice
 Matrix* matrix_multiply(const Matrix* a, const Matrix* b);
 //Somma Matrice Matrice
@@ -89,8 +102,12 @@ Eigenvalues2x2 matrix_eigenvalues2x2(Matrix* in);
 Eigenvctors2x2 matrix_eigenvectors2x2(Matrix* in);
 //calcolo degli autovettori su matrice 2x2 e li normalizza
 Eigenvctors2x2 matrix_eigenvectors2x2_normalized(Matrix* in);
+//calcolo gli autovettori (matrice 2x2) e gli auto valori (matrice 2*2, diagonale)
+Eigen2x2 matrix_eigen2x2(Matrix* in);
 //Libera memoria allocata
-void eigenvctors2x2_free(Eigenvctors2x2 values);
+void eigenvectors2x2_free(Eigenvctors2x2 values);
+//Libera memoria allocata
+void eigen2x2_free(Eigen2x2 values);
 //Normalizzazione vettore
 Matrix* matrix_column_normalized(const Matrix* in, int icolumn);
 //normalizza il vettore dato

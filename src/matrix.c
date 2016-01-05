@@ -42,6 +42,18 @@ Matrix* matrix_init(double* values,int w,int h)
     }
     return output;
 }
+//create a rotation matrix
+Matrix* matrix_rotate(double alpha)
+{
+	double s = sin(alpha);
+	double c = cos(alpha);
+	double r_init[] =
+	{
+		s,-c,
+		c, s
+	};
+	return matrix_init(r_init,2,2);
+}
 //Alloca una matrice di identità
 Matrix* matrix_identity(int w,int h)
 {
@@ -54,6 +66,17 @@ Matrix* matrix_identity(int w,int h)
         matrix_set(output, xy, xy, 1.0);
     //return matrix
     return output;
+}
+//Alloca una matrice sqrt(in)
+Matrix* matrix_sqrt(const Matrix* in)
+{
+	Matrix* output = matrix_alloc(in->w, in->h);
+	for (int x = 0; x != in->w; ++x)
+	for (int y = 0; y != in->h; ++y)
+	{
+		matrix_set(output, x, y, sqrt(matrix_get(in,x,y)));
+	}
+	return output;
 }
 //merge sort
 static void merge_aux(double *a, int n, int m)
@@ -180,7 +203,7 @@ Matrix* matrix_diagonal(int w,int h,double value)
 }
 
 //copia la matrice
-Matrix* matrix_copy(Matrix* in)
+Matrix* matrix_copy(const Matrix* in)
 {
     Matrix* output = matrix_alloc(in->w, in->h);
     for(int x=0;x!=in->w;++x)
@@ -521,17 +544,61 @@ Eigenvctors2x2 matrix_eigenvectors2x2_normalized(Matrix* in)
     matrix_column_normalized_inplace(output.v2,0);
     return output;
 }
-//Libera memoria allocata
-void eigenvctors2x2_free(Eigenvctors2x2 values)
+//calcolo gli autovettori (matrice 2x2) e gli auto valori (matrice 2*2, diagonale)
+Eigen2x2 matrix_eigen2x2(Matrix* in)
 {
-    if(values.success)
-    {
-        matrix_free(values.v1);
-        matrix_free(values.v2);
-        values.success = false;
-        values.v1 = NULL;
-        values.v2 = NULL;
-    }
+	Eigen2x2 output;
+	output.success = false;
+	output.V = NULL;
+	output.D = NULL;
+
+	Eigenvalues2x2 values = matrix_eigenvalues2x2(in);
+	if (!values.success) return output;
+	Eigenvctors2x2 vectors = matrix_eigenvectors2x2_normalized(in);
+	if (!vectors.success) return output;
+	//create init matrix
+	double init_values_v[] =
+	{
+		matrix_get(vectors.v1,0,0),matrix_get(vectors.v2,0,0),
+		matrix_get(vectors.v1,0,1),matrix_get(vectors.v2,0,1),
+	};
+	//create init matrix
+	double init_values_d[] =
+	{
+		values.lambda1,           0.0,
+				   0.0,values.lambda2
+	};
+	//dealloc vectors
+	eigenvectors2x2_free(vectors);
+	//alloc V and D
+	output.V = matrix_init(init_values_v, 2, 2);
+	output.D = matrix_init(init_values_d, 2, 2);
+
+	return output;
+}
+//Libera memoria allocata
+void eigenvectors2x2_free(Eigenvctors2x2 values)
+{
+	if (values.success)
+	{
+		matrix_free(values.v1);
+		matrix_free(values.v2);
+		values.success = false;
+		values.v1 = NULL;
+		values.v2 = NULL;
+	}
+}
+//Libera memoria allocata
+void eigen2x2_free(Eigen2x2 values)
+{
+	if (values.success)
+	{
+		matrix_free(values.V);
+		matrix_free(values.D);
+		values.success = false;
+		values.V = NULL;
+		values.D = NULL;
+	}
 }
 
 //Normalizzazione vettore
