@@ -446,7 +446,7 @@ void matrix_print(const Matrix* in)
     {
         for(int x=0; x != in->w ; ++x)
         {
-            printf("%0.3 f\t",matrix_get(in, x, y));
+            printf("%0.3f\t",matrix_get(in, x, y));
         }
         printf("\n");
     }
@@ -633,7 +633,7 @@ void matrix_column_normalized_inplace(Matrix* inout, int icolumn)
         matrix_set(inout, icolumn, y, matrix_get(inout,icolumn,y) / mag );
 }
 //trasporre matrice
-Matrix* matrix_transpose(Matrix* in)
+Matrix* matrix_transpose(const Matrix* in)
 {
     Matrix* output = matrix_alloc(in->h, in->w);
     
@@ -643,4 +643,21 @@ Matrix* matrix_transpose(Matrix* in)
             matrix_set(output, x, y, matrix_get(in, y, x));
         }
     return output;
+}
+//Inversa matrice 2x2 
+Matrix* matrix_inv2x2(const Matrix* in)
+{
+	if (in->w != 2 || in->h != 2) return NULL;
+
+	Matrix* output = matrix_alloc(2, 2);
+	
+	double det = (matrix_get(in, 0, 0)*matrix_get(in, 1, 1)) - 
+		         (matrix_get(in, 1, 0)*matrix_get(in, 0, 1));
+
+	matrix_set(output, 0, 0, (matrix_get(in, 1, 1)) / det);
+	matrix_set(output, 1, 1, (matrix_get(in, 0, 0)) / det);
+	matrix_set(output, 1, 0, -(matrix_get(in, 1, 0)) / det);
+	matrix_set(output, 0, 1, -(matrix_get(in, 0, 1)) / det);
+
+	return output;
 }

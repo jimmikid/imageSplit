@@ -12,6 +12,7 @@
 #include <matrix.h>
 #include <assert.h>
 #include <math.h>
+#include <float.h>
 #include <tga_loader.h>
 #define MODE_DEBUG
 
@@ -35,23 +36,42 @@ int main()
 #elif 0
 int main()
 {
-    //values
-    double v[] = {
-                   18, 22,  54,  42,
-                   22, 70,  86,  62,
-                   54, 86, 174, 134,
-                   42, 62, 134, 106
-                 };
-    //init matrix
-    Matrix* m=matrix_init(v, 4, 4);
-    //execute cholesky factorization
-    Matrix* l=matrix_cholesky_factorization(m);
-    //print all
-    printf("\nMatrix:\n");
-    matrix_print(m);
-    printf("\nCholesky factorization:\n");
-    matrix_print(l);
-    return 0;
+	//values
+	double v[] = {
+		18, 22,  54,  42,
+		22, 70,  86,  62,
+		54, 86, 174, 134,
+		42, 62, 134, 106
+	};
+	//init matrix
+	Matrix* m = matrix_init(v, 4, 4);
+	//execute cholesky factorization
+	Matrix* l = matrix_cholesky_factorization(m);
+	//print all
+	printf("\nMatrix:\n");
+	matrix_print(m);
+	printf("\nCholesky factorization:\n");
+	matrix_print(l);
+	return 0;
+}
+#elif 0
+int main()
+{
+	//values
+	double v[] = {
+		2, 3, 
+		1, 5
+	};
+	//init matrix
+	Matrix* m = matrix_init(v, 2, 2);
+	//execute cholesky factorization
+	Matrix* l = matrix_inv2x2(m);
+	//print all
+	printf("\nMatrix:\n");
+	matrix_print(m);
+	printf("\nInverse:\n");
+	matrix_print(l);
+	return 0;
 }
 #elif 1
 
@@ -93,6 +113,66 @@ ImageMarge marge_images(Matrix* s[2])
 	return output;
 }
 
+double compute_funz_ob_theta(Matrix* L, Matrix* x[2], size_t N, double theta)
+{
+	Matrix* U = matrix_rotate(theta);
+	Matrix* A = matrix_multiply(L, U);
+
+	double sum[] =
+	{
+		matrix_get(A,0,0) + matrix_get(A,1,0),
+		matrix_get(A,0,1) + matrix_get(A,1,1)
+	};
+
+	matrix_set(A, 0, 0, matrix_get(A, 0, 0) / sum[0]);
+	matrix_set(A, 1, 0, matrix_get(A, 1, 0) / sum[0]);
+
+	matrix_set(A, 0, 1, matrix_get(A, 0, 1) / sum[1]);
+	matrix_set(A, 1, 1, matrix_get(A, 1, 1) / sum[1]);
+	
+	Matrix* A_t   = matrix_transpose(A);
+	Matrix* A_t_i = matrix_inv2x2(A);
+
+	//Bisogna fare un metodo che trasformi vettore di 2 matrici 
+	//a singola colonna in una matrice con 2 colonne...
+	Matrix* x2 = matrix_alloc(2, N);
+	//copy all elements into new Matrix
+	for (int y = 0; y != N; ++y)
+	{
+		matrix_set(x2, 0, y, matrix_get(x[0], 0, y));
+		matrix_set(x2, 1, y, matrix_get(x[1], 0, y));
+	}
+	//compute sk
+	Matrix* sk = matrix_multiply(x2, A_t_i);
+	const double s_min = 0;
+	const double s_max = 255;
+
+	for (int y = 0; y != N; ++y)
+	{
+		if (matrix_get(sk, 0, y) < s_min) matrix_set(sk, 0, y, s_min);
+		if (matrix_get(sk, 1, y) < s_min) matrix_set(sk, 1, y, s_min);
+		/*
+		if (matrix_get(sk, 0, y) > s_max) matrix_set(sk, 0, y, s_max);
+		if (matrix_get(sk, 1, y) > s_max) matrix_set(sk, 1, y, s_max);
+		*/
+	}
+	//compute output
+	double n = 0;
+	//sum all components
+	for (int y = 0; y != N; ++y)
+	{
+		n += abs(matrix_get(sk, 0, y) + matrix_get(sk, 1, y));
+	}
+	//dealloc all
+	matrix_free(U);
+	matrix_free(A);
+	matrix_free(x2);
+	matrix_free(A_t);
+	matrix_free(A_t_i);
+	//return computed value
+	return n;
+}
+
 typedef struct EstimateThetaReturn
 { 
 	double theta;
@@ -103,6 +183,173 @@ EstimateThetaReturn;
 EstimateThetaReturn estimate_theta_funz(Matrix* L, Matrix* x[2], size_t nm2, double theta)
 {
 	EstimateThetaReturn output;
+
+	double p = 0.1;
+	double nn = DBL_MAX;
+	double funz_ob[] = { 0.0, 0.0, 0.0, 0.0 };
+	double theta2 = theta;
+	double theta_v[] = { theta2 - p, theta2 , theta2 + p };
+	//...
+	for (size_t i = 0; i != 3; ++i)
+	{
+		funz_ob[i] = compute_funz_ob_theta(L, x, nm2, theta_v[i]);
+	}
+	//loop count
+	int loop_count = 1;
+	//..
+	while (true)
+	{
+		nn = funz_ob[1];
+
+		if (funz_ob[1] < funz_ob[0] && funz_ob[1] < funz_ob[2])
+		{
+			break;
+		}
+		else
+		{
+			if (funz_ob[0] < funz_ob[2])
+			{
+				//move to left
+				theta_v[0] = theta_v[0] - p;
+				theta_v[1] = theta_v[0] ;
+				theta_v[2] = theta_v[1] ;
+				//recompute
+				funz_ob[0] = compute_funz_ob_theta(L, x, nm2, theta_v[0]);
+				funz_ob[1] = funz_ob[0];
+				funz_ob[2] = funz_ob[1];
+			}
+			else if (funz_ob[2] < funz_ob[0])
+			{
+				//move to right
+				theta_v[0] = theta_v[1];
+				theta_v[1] = theta_v[2];
+				theta_v[2] = theta_v[2] + p;
+				//recompute
+				funz_ob[0] = funz_ob[1];
+				funz_ob[1] = funz_ob[2];
+				funz_ob[2] = compute_funz_ob_theta(L, x, nm2, theta_v[2]);
+			}
+		}
+
+		++loop_count;
+	};
+
+	double r  = (sqrt(5.) - 1.) / 2.;
+	double r1 = 1 - r;
+
+#if 0
+	//x(1) == x[0](0,0);
+	//x(2) == x[0](1,0);
+	//x(3) == x[0](2,0);
+	//x(4) == x[0](3,0);
+	matrix_set(x[0], 0, 0, theta_v[0]);
+	matrix_set(x[0], 3, 0, theta_v[2]);
+
+	if (fabs(theta_v[2] - theta_v[1]) > fabs(theta_v[1] - theta_v[0]))
+	{
+		matrix_set(x[0], 1, 0, theta_v[1]);
+		matrix_set(x[0], 2, 0, theta_v[1] + r1*(theta_v[2]-theta_v[1]));
+	}
+	else
+	{
+		matrix_set(x[0], 2, 0, theta_v[1]);
+		matrix_set(x[0], 1, 0, theta_v[1] - r1*(theta_v[1] - theta_v[0]));
+	}
+
+	funz_ob[1] = compute_funz_ob_theta(L, x, nm2, matrix_get(x[0], 1, 0));
+	funz_ob[3] = compute_funz_ob_theta(L, x, nm2, matrix_get(x[0], 3, 0));
+	funz_ob[2] = compute_funz_ob_theta(L, x, nm2, matrix_get(x[0], 2, 0));
+
+	while (fabs(matrix_get(x[0], 2, 0)- matrix_get(x[0], 1, 0)) > 1.0e-9)
+	{
+		if (funz_ob[2] < funz_ob[1])
+		{
+			matrix_set(x[0], 0, 0, matrix_get(x[0], 1, 0));
+			matrix_set(x[0], 1, 0, matrix_get(x[0], 2, 0));
+			matrix_set(x[0], 2, 0, r*matrix_get(x[0], 1, 0)+r1*matrix_get(x[0], 3, 0));
+			funz_ob[0] = funz_ob[1];
+			funz_ob[1] = funz_ob[2];
+			funz_ob[2] = compute_funz_ob_theta(L, x, nm2, matrix_get(x[0], 2, 0));
+		}
+		else
+		{
+			matrix_set(x[0], 3, 0, matrix_get(x[0], 2, 0));
+			matrix_set(x[0], 2, 0, matrix_get(x[0], 1, 0));
+			matrix_set(x[0], 1, 0, r*matrix_get(x[0], 2, 0) + r1*matrix_get(x[0], 0, 0));
+			funz_ob[3] = funz_ob[2];
+			funz_ob[2] = funz_ob[1];
+			funz_ob[1] = compute_funz_ob_theta(L, x, nm2, matrix_get(x[0], 1, 0));
+		}
+	}
+
+	if ( funz_ob[1] < funz_ob[2] )
+	{
+		output.theta = matrix_get(x[0], 1, 0);
+		output.estimate = funz_ob[1];
+	}
+	else
+	{
+		output.theta    = matrix_get(x[0], 2, 0);
+		output.estimate = funz_ob[2];
+	}
+#else
+	//ipotizzando che sia stata programmata da 
+	//una scimmia che non sà programmare...
+	double tmp[4] = { 0.0, 0.0, 0.0, 0.0 };
+
+	tmp[0] = theta_v[0];
+	tmp[3] = theta_v[3];
+
+	if (fabs(theta_v[2] - theta_v[1]) > fabs(theta_v[1] - theta_v[0]))
+	{
+		tmp[1] = theta_v[1];
+		tmp[2] = theta_v[1] + +r1*(theta_v[2] - theta_v[1]);
+	}
+	else
+	{
+		tmp[2] = theta_v[1];
+		tmp[1] = theta_v[1] - r1*(theta_v[1] - theta_v[0]);
+	}
+
+	funz_ob[1] = compute_funz_ob_theta(L, x, nm2, tmp[1]);
+	funz_ob[3] = compute_funz_ob_theta(L, x, nm2, tmp[3]);
+	funz_ob[2] = compute_funz_ob_theta(L, x, nm2, tmp[2]);
+
+	while (fabs(tmp[2] - tmp[1]) > 1.0e-9)
+	{
+
+		if (funz_ob[2] < funz_ob[1])
+		{
+			tmp[0] = tmp[1];
+			tmp[1] = tmp[2];
+			tmp[2] = r*tmp[1] + r1*tmp[3];
+			funz_ob[0] = funz_ob[1];
+			funz_ob[1] = funz_ob[2];
+			funz_ob[2] = compute_funz_ob_theta(L, x, nm2, tmp[2]);
+		}
+		else
+		{
+			tmp[3] = tmp[2];
+			tmp[2] = tmp[1];
+			tmp[1] = r*tmp[2] + r1*tmp[0];
+			funz_ob[3] = funz_ob[2];
+			funz_ob[2] = funz_ob[1];
+			funz_ob[1] = compute_funz_ob_theta(L, x, nm2, tmp[1]);
+		}
+	}
+
+	if (funz_ob[1] < funz_ob[2])
+	{
+		output.theta    = tmp[1];
+		output.estimate = funz_ob[1];
+	}
+	else
+	{
+		output.theta    = tmp[2];
+		output.estimate = funz_ob[2];
+	}
+#endif
+
 	return output;
 }
 

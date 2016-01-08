@@ -14,8 +14,8 @@
 //Definizione della struttura della matrice
 typedef struct Matrix
 {
-    int w,h;        //dimensione
-    double **buffer;   //contiene i numeri della matrice
+    int w,h;			//dimensione
+    double **buffer;	//contiene i numeri della matrice
 }
 Matrix;
 
@@ -41,8 +41,8 @@ Eigenvctors2x2;
 typedef struct Eigen2x2
 {
 	bool    success;
-	Matrix* V;
-	Matrix* D;
+	Matrix* V;		//Matrice degli Autovettori
+	Matrix* D;		//Matrice diagonale contenente gli Autovalori
 }
 Eigen2x2;
 
@@ -96,14 +96,19 @@ Matrix* matrix_from_gimp_file (char *filename);
 void matrix_save_only_buffer(const char* path, const Matrix* in);
 //print matrix
 void matrix_print(const Matrix* in);
+
 //calcolo eigenvalues (autovalori) 2x2
 Eigenvalues2x2 matrix_eigenvalues2x2(Matrix* in);
+
 //calcolo degli autovettori su matrice 2x2
 Eigenvctors2x2 matrix_eigenvectors2x2(Matrix* in);
+
 //calcolo degli autovettori su matrice 2x2 e li normalizza
 Eigenvctors2x2 matrix_eigenvectors2x2_normalized(Matrix* in);
+
 //calcolo gli autovettori (matrice 2x2) e gli auto valori (matrice 2*2, diagonale)
 Eigen2x2 matrix_eigen2x2(Matrix* in);
+
 //Libera memoria allocata
 void eigenvectors2x2_free(Eigenvctors2x2 values);
 //Libera memoria allocata
@@ -113,5 +118,7 @@ Matrix* matrix_column_normalized(const Matrix* in, int icolumn);
 //normalizza il vettore dato
 void matrix_column_normalized_inplace(Matrix* inout, int icolumn);
 //Trasposta matrice
-Matrix* matrix_transpose(Matrix* in);
+Matrix* matrix_transpose(const Matrix* in);
+//Inversa matrice 2x2 
+Matrix* matrix_inv2x2(const Matrix* in);
 #endif /* matrix_h */
