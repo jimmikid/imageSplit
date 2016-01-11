@@ -11,6 +11,7 @@
 #include <matrix.h>
 #include <tga_loader.h>
 #include <memory.h>
+#include <assert.h>
 
 #ifdef _MSC_VER
 #define ASPACKED( __Declaration__ ) __pragma( pack(push,1) ) __Declaration__   __pragma( pack(pop) )
@@ -99,9 +100,15 @@ RGB_Matrix rgb_matrix_from_tga_file(const char* filepath)
             //pixel[1] G
             //pixel[2] R
             //pixel[3] A
-            matrix_set(output.matrix_r, x, header.height - y - 1,  ((double)pixel[2])/*/255.0*/);
-            matrix_set(output.matrix_g, x, header.height - y - 1,  ((double)pixel[1])/*/255.0*/);
-            matrix_set(output.matrix_b, x, header.height - y - 1,  ((double)pixel[0])/*/255.0*/);
+#if 0
+			matrix_set(output.matrix_r, x, header.height - y - 1, ((double)pixel[2])/*/255.0*/);
+			matrix_set(output.matrix_g, x, header.height - y - 1, ((double)pixel[1])/*/255.0*/);
+			matrix_set(output.matrix_b, x, header.height - y - 1, ((double)pixel[0])/*/255.0*/); 
+#else
+			matrix_set(output.matrix_r, x, y , ((double)pixel[2])/*/255.0*/);
+			matrix_set(output.matrix_g, x, y , ((double)pixel[1])/*/255.0*/);
+			matrix_set(output.matrix_b, x, y , ((double)pixel[0])/*/255.0*/);
+#endif
         };
     }
     //dealloc
@@ -112,7 +119,29 @@ RGB_Matrix rgb_matrix_from_tga_file(const char* filepath)
     return  output;
 }
 
+static double d_max(double a, double b)
+{
+	return a > b ? a : b;
+}
+static double d_min(double a, double b)
+{
+	return a < b ? a : b;
+}
+static double clamp(double value, double v_min, double v_max)
+{
+	return d_min(d_max(value, v_min), v_max);
+}
 
+void rgb_matrix_clamp_inplace(RGB_Matrix rgb_matrix, double min, double max)
+{
+	for (size_t y = 0; y != rgb_matrix.matrix_r->h; ++y)
+	for (size_t x = 0; x != rgb_matrix.matrix_r->w; ++x)
+	{
+		matrix_set(rgb_matrix.matrix_r, x, y, clamp(matrix_get(rgb_matrix.matrix_r, x, y), min, max));
+		matrix_set(rgb_matrix.matrix_g, x, y, clamp(matrix_get(rgb_matrix.matrix_g, x, y), min, max));
+		matrix_set(rgb_matrix.matrix_b, x, y, clamp(matrix_get(rgb_matrix.matrix_b, x, y), min, max));
+	}
+}
 bool rgb_matrix_to_tga_file(const char* filepath,RGB_Matrix rgb_matrix)
 {
     //image struct
@@ -144,9 +173,15 @@ bool rgb_matrix_to_tga_file(const char* filepath,RGB_Matrix rgb_matrix)
     for(y=0;y!=header.height; ++y)
     for(x=0;x!=header.width; ++x)
     {
-        data[(x+y*header.width)*channels+2] = (Byte)(matrix_get(rgb_matrix.matrix_r, x, header.height - y - 1)/**255.0*/);
-        data[(x+y*header.width)*channels+1] = (Byte)(matrix_get(rgb_matrix.matrix_g, x, header.height - y - 1)/**255.0*/);
-        data[(x+y*header.width)*channels+0] = (Byte)(matrix_get(rgb_matrix.matrix_b, x, header.height - y - 1)/**255.0*/);
+#if 0
+        data[(x+y*header.width)*channels+2] = (Byte)clamp(matrix_get(rgb_matrix.matrix_r, x, header.height - y - 1),0.0,255.0);
+        data[(x+y*header.width)*channels+1] = (Byte)clamp(matrix_get(rgb_matrix.matrix_g, x, header.height - y - 1),0.0,255.0);
+        data[(x+y*header.width)*channels+0] = (Byte)clamp(matrix_get(rgb_matrix.matrix_b, x, header.height - y - 1),0.0,255.0);
+#else
+		data[(x + y*header.width)*channels + 2] = (Byte)clamp(matrix_get(rgb_matrix.matrix_r, x, header.height - y - 1), 0.0, 255.0);
+		data[(x + y*header.width)*channels + 1] = (Byte)clamp(matrix_get(rgb_matrix.matrix_g, x, header.height - y - 1), 0.0, 255.0);
+		data[(x + y*header.width)*channels + 0] = (Byte)clamp(matrix_get(rgb_matrix.matrix_b, x, header.height - y - 1), 0.0, 255.0);
+#endif
     }
     //write header
     fwrite(&header, sizeof(struct TgaHeader), 1, pfile);
@@ -206,6 +241,26 @@ Matrix* r_matrix_inverse(Matrix* r_matrix)
     return output;
 }
 
+Matrix* r_matrix_sub(Matrix* r_matrix, size_t pos[2], size_t size[2])
+{
+	assert(pos[0] + size[0] <= r_matrix->w);
+	assert(pos[1] + size[1] <= r_matrix->h);
+	Matrix* output = matrix_alloc(size[0], size[1]);
+#if 1
+	for (size_t x = 0; x != size[0]; ++x)
+	{
+		memcpy(output->buffer[x], &r_matrix->buffer[x+pos[0]][pos[1]], sizeof(double)*size[1]);
+	}
+#else
+	for (size_t x = 0; x != size[0]; ++x)
+	for (size_t y = 0; y != size[1]; ++y)
+	{
+		matrix_set(output, x, y, matrix_get(r_matrix, x+pos[0], y+pos[1]));
+	}
+#endif
+	return output;
+}
+
 RGB_Matrix rgb_matrix_normalize(RGB_Matrix rgb_matrix)
 {
     RGB_Matrix output = rgb_matrix_copy(rgb_matrix);
@@ -234,6 +289,15 @@ RGB_Matrix rgb_matrix_denormalize(RGB_Matrix rgb_matrix)
     }
     
     return output;
+}
+
+RGB_Matrix rgb_matrix_sub(RGB_Matrix rgb_matrix,size_t pos[2],size_t size[2])
+{
+	RGB_Matrix output;
+	output.matrix_r = r_matrix_sub(rgb_matrix.matrix_r,pos,size);
+	output.matrix_g = r_matrix_sub(rgb_matrix.matrix_g,pos,size);
+	output.matrix_b = r_matrix_sub(rgb_matrix.matrix_b,pos,size);
+	return output;
 }
 
 void matrix_rgb(RGB_Matrix rgb_matrix)

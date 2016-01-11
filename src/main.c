@@ -164,7 +164,7 @@ double compute_funz_ob_theta(Matrix* L, Matrix* x[2], size_t N, double theta)
 	matrix_set(A, 0, 1, matrix_get(A, 0, 1) / sum[1]);
 	matrix_set(A, 1, 1, matrix_get(A, 1, 1) / sum[1]);
 
-	Matrix* A_t   = matrix_transpose(A);
+	Matrix* A_t   = /* matrix_transpose */ matrix_copy(A);
 	Matrix* A_t_i = matrix_inv2x2(A);
 
 	//put 2 col. matrix into a matrix Nx2
@@ -450,7 +450,7 @@ Matrix* estimate(Matrix* x[2], size_t nm2)
 	printf("A_estimate:\n");
 	matrix_print(A_estimate);
 #endif
-	//dealoc all
+	//dealloc all
 	int i = 0;
 	for (i = 0; i != 2; ++i) matrix_free(t_x[i]);
 	for (i = 0; i != 4; ++i) matrix_free(C_v[i]);
@@ -525,14 +525,14 @@ ImageMarge split_images(ImageMarge images,  size_t nm[2], size_t nm2)
 	//Processing
 	Matrix* A_stimate     = estimate(x, nm2);
 	Matrix* A_stimate_i   = matrix_inv2x2(A_stimate);
-	Matrix* A_stimate_i_t = matrix_transpose(A_stimate_i);
+	Matrix* A_stimate_i_t = /* matrix_transpose */ matrix_copy(A_stimate_i);
 	Matrix* x_orig2		  = put_x_into_matrix_col(x_orig, x_orig[0]->w);
 	Matrix* sk			  = matrix_multiply(x_orig2, A_stimate_i_t);
 	//get mode of images
 	double	new_mode_front = matrix_mode_row(sk, 0);
 	double	new_mode_back  = matrix_mode_row(sk, 1);
 #if defined( MODE_DEBUG ) && 0
-	printf("new_mode_front: %g, new_mode_back:%g", new_mode_front, new_mode_back);
+	printf("new_mode_front: %g, new_mode_back:%g\n", new_mode_front, new_mode_back);
 	//printf("x_orig2\n");
 	//matrix_print(x_orig2);
 	printf("A_stimate\n");
@@ -601,8 +601,115 @@ ImageMarge split_images(ImageMarge images,  size_t nm[2], size_t nm2)
 #endif
 }
 
+const int k = 100; //step for the grid
+const int d1 = 5;  //minimun distance from mode
+const int d2 = 5;  //minimun distance from original image
+const int c = 1;   //correction factor
+
+
+void correct_rgb(RGB_Matrix ss,
+				 RGB_Matrix orig,
+				 size_t pos[2],
+				 size_t sub_nm[2],
+				 size_t nm[2],
+				 size_t nm2)
+{
+	/*compute mode of input image for the three channels*/
+	//mode(red)
+	//mode(green)
+	//mode(blue)
+	Matrix* rgb_rows[3] =
+	{
+		matrix_sub_to_vector(ss.matrix_r, pos, sub_nm),
+		matrix_sub_to_vector(ss.matrix_g, pos, sub_nm),
+		matrix_sub_to_vector(ss.matrix_b, pos, sub_nm)
+	};
+
+	//matrix_print_to_file(rgb_rows[0],"pisello.txt");
+
+	double mode[3] =
+	{
+		matrix_mode_row(rgb_rows[0],0),
+		matrix_mode_row(rgb_rows[1],0),
+		matrix_mode_row(rgb_rows[2],0)
+	};
+
+	for (size_t i = 0; i != 3; ++i)
+	{
+		matrix_free(rgb_rows[i]);
+	}
+
+	double mode_md = (mode[0] + mode[1] + mode[2]) / 3.0;
+
+	for (size_t sub_i = 0; sub_i != sub_nm[0]; ++sub_i)
+	for (size_t sub_j = 0; sub_j != sub_nm[1]; ++sub_j)
+	{
+		size_t i = sub_i + pos[0];
+		size_t j = sub_j + pos[1];
+
+		if (fabs((matrix_get(ss.matrix_r, i, j) + 
+				  matrix_get(ss.matrix_g, i, j) +
+				  matrix_get(ss.matrix_b, i, j)) / 3.0 - mode_md) > d1 &&
+			fabs(matrix_get(ss.matrix_r, i, j) - matrix_get(orig.matrix_r, i, j)) > d2 &&
+			fabs(matrix_get(ss.matrix_g, i, j) - matrix_get(orig.matrix_g, i, j)) > d2 &&
+			fabs(matrix_get(ss.matrix_b, i, j) - matrix_get(orig.matrix_b, i, j)) > d2)
+		{
+#if 1
+			matrix_set(ss.matrix_r, i, j, mode[0] + (c*(matrix_get(ss.matrix_r, i, j) - mode[0]) / matrix_get(ss.matrix_r, i, j)));
+			matrix_set(ss.matrix_g, i, j, mode[1] + (c*(matrix_get(ss.matrix_g, i, j) - mode[1]) / matrix_get(ss.matrix_g, i, j)));
+			matrix_set(ss.matrix_b, i, j, mode[2] + (c*(matrix_get(ss.matrix_b, i, j) - mode[2]) / matrix_get(ss.matrix_b, i, j)));
+#else
+			matrix_set(ss.matrix_r, i, j, matrix_get(ss.matrix_r, i, j));
+			matrix_set(ss.matrix_g, i, j, matrix_get(ss.matrix_g, i, j));
+			matrix_set(ss.matrix_b, i, j, matrix_get(ss.matrix_b, i, j));
+#endif
+		}
+	}
+
+}
+void correct_color(RGB_Matrix ss, 
+				   RGB_Matrix orig,
+	               size_t nm[2], 
+	               size_t nm2)
+{
+
+
+	if (!k)
+	{
+		size_t pos[] = { 0,0 };
+		correct_rgb(ss, orig, pos, nm, nm, nm2);
+	}
+	
+	size_t i = 0; 
+	size_t j = 0;
+
+	for ( i = 0; i < nm[0] - k; i += k)
+	{
+		for ( j = 0; j < nm[1] - k; j += k)
+		{
+			size_t pos[2]  = { i, j };
+			size_t sub_nm[2] = { k, k };
+			correct_rgb(ss,orig,pos,sub_nm,nm,nm2);
+		}
+		size_t pos[2] = { i, j };
+		size_t sub_nm[2] = { k, nm[1] - j };
+		correct_rgb(ss, orig, pos, sub_nm, nm, nm2);
+	}
+	for ( j = 0; j < nm[1] - k; j += k )
+	{
+		size_t pos[2] = { i, j };
+		size_t sub_nm[2] = { nm[0] - i, k };
+		correct_rgb(ss, orig, pos, sub_nm, nm, nm2);
+	}
+	size_t pos[2] = { i, j };
+	size_t sub_nm[2] = { nm[0]-i, nm[1]-j };
+	correct_rgb(ss, orig, pos, sub_nm, nm, nm2);
+
+}
+
 int main(int argc,const char* argv[])
 {
+#if 0
     //paths
     const char* path_image[] =
     {
@@ -639,16 +746,47 @@ int main(int argc,const char* argv[])
 	Matrix*     colors_b[] = { image[0].matrix_b, image[1].matrix_b };
 	ImageMarge  images_b = b_not_merge ? marge_images_init(colors_b) : marge_images(colors_b);
 				images_b = split_images(images_b, size, elements);
-	////////////////////////////////////////////////////////////////////////////////////
-	RGB_Matrix front_image = rgb_matrix_init(images_r.front, 
-											 images_g.front,
-										 	 images_b.front);
-	rgb_matrix_to_tga_file("out_front.tga", front_image);
 
-	RGB_Matrix back_image = rgb_matrix_init(images_r.back,
-										    images_g.back,
-											images_b.back);
+	////////////////////////////////////////////////////////////////////////////////////
+	RGB_Matrix front_image = rgb_matrix_init(images_r.front, images_g.front, images_b.front);
+	//correct_color(front_image, image[0], size,  elements);
+	RGB_Matrix back_image = rgb_matrix_init(images_r.back, images_g.back, images_b.back);
+	//correct_color(back_image, image[1], size, elements);
+	////////////////////////////////////////////////////////////////////////////////////
+	rgb_matrix_to_tga_file("out_front.tga", front_image);
 	rgb_matrix_to_tga_file("out_back.tga", back_image);
+#else
+	//paths
+	const char* path_image[] =
+	{
+		"assets/mistura_recto.tga",
+		"assets/mistura_verso.tga",
+
+		"assets/verso_stimato.tga",
+		"assets/recto_stimato.tga"
+	};
+	//load images
+	RGB_Matrix image[2];
+	image[0] = rgb_matrix_from_tga_file(path_image[0]);
+	image[1] = rgb_matrix_from_tga_file(path_image[1]);
+	
+	size_t size[] =
+	{
+		image[0].matrix_r->w,
+		image[0].matrix_r->h
+	};
+	//elements count
+	size_t elements = size[0] * size[1];
+
+	RGB_Matrix front_image = rgb_matrix_from_tga_file(path_image[2]);
+	correct_color(front_image, image[0], size, elements);
+
+	RGB_Matrix back_image = rgb_matrix_from_tga_file(path_image[3]);
+	correct_color(back_image, image[1], size, elements);
+
+	rgb_matrix_to_tga_file("_out_front.tga", front_image);
+	rgb_matrix_to_tga_file("_out_back.tga", back_image);
+#endif
     return 0;
 }
 

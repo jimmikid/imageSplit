@@ -158,6 +158,7 @@ double matrix_mode_row(const Matrix* a,size_t row)
     //return
     return output;
 }
+
 //fattorizazione di cholesky
 Matrix* matrix_cholesky_factorization(const Matrix* a)
 {
@@ -259,6 +260,19 @@ Matrix* matrix_to_vector(const Matrix* in)
     }
     
     return output;
+}
+
+Matrix* matrix_sub_to_vector(const Matrix* in, size_t pos[2], size_t size[2])
+{
+	Matrix* output = matrix_alloc(size[0] * size[1], 1);
+
+	for (size_t x = 0; x != size[0]; ++x)
+	for (size_t y = 0; y != size[1]; ++y)
+	{    
+		matrix_set(output, y + x*size[1], 0, matrix_get(in, x + pos[0], y + pos[1]));
+	}
+
+	return output;
 }
 //row vector to matrix
 Matrix* matrix_from_vector(const Matrix* in, size_t col,size_t w,size_t h)
@@ -442,14 +456,31 @@ void matrix_save_only_buffer(const char* path, const Matrix* in)
 //print matrix
 void matrix_print(const Matrix* in)
 {
-    for(size_t y=0; y != in->h ; ++y)
-    {
-        for(size_t x=0; x != in->w ; ++x)
-        {
-            printf("%0.3f\t",matrix_get(in, x, y));
-        }
-        printf("\n");
-    }
+	for (size_t y = 0; y != in->h; ++y)
+	{
+		for (size_t x = 0; x != in->w; ++x)
+		{
+			printf("%0.3f\t", matrix_get(in, x, y));
+		}
+		printf("\n");
+	}
+}
+void matrix_print_to_file(const Matrix* in,const char* path)
+{
+	FILE* pfile = fopen(path, "w");
+	
+	if (!pfile) return;
+
+	for (size_t y = 0; y != in->h; ++y)
+	{
+		for (size_t x = 0; x != in->w; ++x)
+		{
+			fprintf(pfile,"%0.3f\t", matrix_get(in, x, y));
+		}
+		fprintf(pfile,"\n");
+	}
+
+	fclose(pfile);
 }
 
 //calcolo eigenvalues (autovalori) 2x2

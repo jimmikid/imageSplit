@@ -49,7 +49,7 @@ Eigen2x2;
 //Allocazione dinamica del tipo matrice
 Matrix* matrix_alloc(size_t w,size_t h);
 //Alloca ed inizializza da un array di double
-Matrix* matrix_init(double* values,size_t w,size_t h);
+Matrix* matrix_init(double* values, size_t w, size_t h);
 //create a rotation matrix
 Matrix* matrix_rotate(double alpha);
 //Alloca una matrice di identità
@@ -64,12 +64,16 @@ Matrix* matrix_copy(const Matrix* in);
 Matrix* matrix_multiply(const Matrix* a, const Matrix* b);
 //Somma Matrice Matrice
 Matrix* matrix_sum(const Matrix* a, const Matrix* b);
+//Limita i valori
+void matrix_clamp_inplace(const Matrix* a, double min, double max);
 //Media moda
 double matrix_mode_row(const Matrix* a,size_t row);
 //fattorizazione di cholesky
 Matrix* matrix_cholesky_factorization(const Matrix* a);
 //matrix to vector
 Matrix* matrix_to_vector(const Matrix* in);
+//sub matrix to vector
+Matrix* matrix_sub_to_vector(const Matrix* in,size_t pos[2],size_t size[2]);
 //row vector to matrix
 Matrix* matrix_from_vector(const Matrix* in, size_t col,size_t w,size_t h);
 //Moltiplicazione Matrice per scalare
@@ -96,6 +100,7 @@ Matrix* matrix_from_gimp_file (char *filename);
 void matrix_save_only_buffer(const char* path, const Matrix* in);
 //print matrix
 void matrix_print(const Matrix* in);
+void matrix_print_to_file(const Matrix* in, const char* path);
 
 //calcolo eigenvalues (autovalori) 2x2
 Eigenvalues2x2 matrix_eigenvalues2x2(Matrix* in);
