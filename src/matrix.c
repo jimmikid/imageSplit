@@ -189,6 +189,19 @@ Matrix* matrix_cholesky_factorization(const Matrix* a)
     }
     return L;
 }
+
+//Copia i valori di una matrice in un altra matrice
+void matrix_put_from_sub_matrix(Matrix* dest,const Matrix* source,size_t pos[2])
+{
+    assert(source->w+pos[0] <= dest->w);
+    assert(source->h+pos[1] <= dest->h);
+    
+    for(size_t x=0; x!=source->w ; ++x)
+    for(size_t y=0; y!=source->h ; ++y)
+    {
+        matrix_set(dest, x + pos[0], y + pos[1], matrix_get(source,x,y));
+    }
+}
 //alloca una matrice diagonale
 Matrix* matrix_diagonal(size_t w,size_t h,double value)
 {

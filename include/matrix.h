@@ -9,6 +9,7 @@
 #ifndef matrix_h
 #define matrix_h
 
+#include <stdlib.h>
 #include <stdbool.h>
 
 //Definizione della struttura della matrice
@@ -64,6 +65,8 @@ Matrix* matrix_copy(const Matrix* in);
 Matrix* matrix_multiply(const Matrix* a, const Matrix* b);
 //Somma Matrice Matrice
 Matrix* matrix_sum(const Matrix* a, const Matrix* b);
+//Copia i valori di una matrice in un altra matrice
+void matrix_put_from_sub_matrix(Matrix* dest,const Matrix* source,size_t pos[2]);
 //Limita i valori
 void matrix_clamp_inplace(const Matrix* a, double min, double max);
 //Media moda

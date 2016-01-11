@@ -164,7 +164,9 @@ double compute_funz_ob_theta(Matrix* L, Matrix* x[2], size_t N, double theta)
 	matrix_set(A, 0, 1, matrix_get(A, 0, 1) / sum[1]);
 	matrix_set(A, 1, 1, matrix_get(A, 1, 1) / sum[1]);
 
-	Matrix* A_t   = /* matrix_transpose */ matrix_copy(A);
+	Matrix* A_t   =  matrix_transpose
+                    // matrix_copy
+                     (A);
 	Matrix* A_t_i = matrix_inv2x2(A);
 
 	//put 2 col. matrix into a matrix Nx2
@@ -525,7 +527,9 @@ ImageMarge split_images(ImageMarge images,  size_t nm[2], size_t nm2)
 	//Processing
 	Matrix* A_stimate     = estimate(x, nm2);
 	Matrix* A_stimate_i   = matrix_inv2x2(A_stimate);
-	Matrix* A_stimate_i_t = /* matrix_transpose */ matrix_copy(A_stimate_i);
+	Matrix* A_stimate_i_t = matrix_transpose
+                          //matrix_copy
+                            (A_stimate_i);
 	Matrix* x_orig2		  = put_x_into_matrix_col(x_orig, x_orig[0]->w);
 	Matrix* sk			  = matrix_multiply(x_orig2, A_stimate_i_t);
 	//get mode of images
@@ -600,12 +604,18 @@ ImageMarge split_images(ImageMarge images,  size_t nm[2], size_t nm2)
 	#endif
 #endif
 }
+#if 1
+/*
+const int k = 30; //step for the grid
+const double d1 = 5;  //minimun distance from mode
+const double d2 = 90;  //minimun distance from original image
+const double c = 1;   //correction factor
+*/
 
-const int k = 100; //step for the grid
-const int d1 = 5;  //minimun distance from mode
-const int d2 = 5;  //minimun distance from original image
-const int c = 1;   //correction factor
-
+const int k = 90; //step for the grid
+const double d1 = 5;  //minimun distance from mode
+const double d2 = 12;  //minimun distance from original image
+const double c = 1;   //correction factor
 
 void correct_rgb(RGB_Matrix ss,
 				 RGB_Matrix orig,
@@ -633,41 +643,47 @@ void correct_rgb(RGB_Matrix ss,
 		matrix_mode_row(rgb_rows[1],0),
 		matrix_mode_row(rgb_rows[2],0)
 	};
-
+    
+    //printf("%g, %g, %g \n",mode[0],mode[1],mode[2]);
+    
 	for (size_t i = 0; i != 3; ++i)
 	{
 		matrix_free(rgb_rows[i]);
 	}
 
 	double mode_md = (mode[0] + mode[1] + mode[2]) / 3.0;
+    
+    if(mode_md > 0.0)
+    {
+        for (size_t sub_i = 0; sub_i != sub_nm[0]; ++sub_i)
+        for (size_t sub_j = 0; sub_j != sub_nm[1]; ++sub_j)
+        {
+            size_t i = sub_i + pos[0];
+            size_t j = sub_j + pos[1];
 
-	for (size_t sub_i = 0; sub_i != sub_nm[0]; ++sub_i)
-	for (size_t sub_j = 0; sub_j != sub_nm[1]; ++sub_j)
-	{
-		size_t i = sub_i + pos[0];
-		size_t j = sub_j + pos[1];
+            if(!(fabs((matrix_get(ss.matrix_r, i, j) +
+                      matrix_get(ss.matrix_g, i, j) +
+                      matrix_get(ss.matrix_b, i, j)) / 3.0 - mode_md) > d1 &&
+           //   fabs(matrix_get(ss.matrix_r, i, j) - matrix_get(orig.matrix_r, i, j)) > d2 &&
+                fabs(matrix_get(ss.matrix_g, i, j) - matrix_get(orig.matrix_g, i, j)) > d2 &&
+                fabs(matrix_get(ss.matrix_b, i, j) - matrix_get(orig.matrix_b, i, j)) > d2) )
 
-		if (fabs((matrix_get(ss.matrix_r, i, j) + 
-				  matrix_get(ss.matrix_g, i, j) +
-				  matrix_get(ss.matrix_b, i, j)) / 3.0 - mode_md) > d1 &&
-			fabs(matrix_get(ss.matrix_r, i, j) - matrix_get(orig.matrix_r, i, j)) > d2 &&
-			fabs(matrix_get(ss.matrix_g, i, j) - matrix_get(orig.matrix_g, i, j)) > d2 &&
-			fabs(matrix_get(ss.matrix_b, i, j) - matrix_get(orig.matrix_b, i, j)) > d2)
-		{
-#if 1
-			matrix_set(ss.matrix_r, i, j, mode[0] + (c*(matrix_get(ss.matrix_r, i, j) - mode[0]) / matrix_get(ss.matrix_r, i, j)));
-			matrix_set(ss.matrix_g, i, j, mode[1] + (c*(matrix_get(ss.matrix_g, i, j) - mode[1]) / matrix_get(ss.matrix_g, i, j)));
-			matrix_set(ss.matrix_b, i, j, mode[2] + (c*(matrix_get(ss.matrix_b, i, j) - mode[2]) / matrix_get(ss.matrix_b, i, j)));
-#else
-			matrix_set(ss.matrix_r, i, j, matrix_get(ss.matrix_r, i, j));
-			matrix_set(ss.matrix_g, i, j, matrix_get(ss.matrix_g, i, j));
-			matrix_set(ss.matrix_b, i, j, matrix_get(ss.matrix_b, i, j));
-#endif
-		}
-	}
+            {
+    #if 1
+                matrix_set(ss.matrix_r, i, j, mode[0] + (c*(matrix_get(ss.matrix_r, i, j) - mode[0]) / matrix_get(ss.matrix_r, i, j)));
+                matrix_set(ss.matrix_g, i, j, mode[1] + (c*(matrix_get(ss.matrix_g, i, j) - mode[1]) / matrix_get(ss.matrix_g, i, j)));
+                matrix_set(ss.matrix_b, i, j, mode[2] + (c*(matrix_get(ss.matrix_b, i, j) - mode[2]) / matrix_get(ss.matrix_b, i, j)));
+    #else
+                matrix_set(ss.matrix_r, i, j, matrix_get(ss.matrix_r, i, j));
+                matrix_set(ss.matrix_g, i, j, matrix_get(ss.matrix_g, i, j));
+                matrix_set(ss.matrix_b, i, j, matrix_get(ss.matrix_b, i, j));
+    #endif
+            }
+        }
+    }
 
 }
-void correct_color(RGB_Matrix ss, 
+void correct_color(RGB_Matrix ss,
 				   RGB_Matrix orig,
 	               size_t nm[2], 
 	               size_t nm2)
@@ -706,10 +722,143 @@ void correct_color(RGB_Matrix ss,
 	correct_rgb(ss, orig, pos, sub_nm, nm, nm2);
 
 }
+#else
+
+void correct_rgb(RGB_Matrix ss,
+                 RGB_Matrix orig,
+                 size_t pos[2],
+                 double d1,
+                 double d2,
+                 double c)
+{
+    
+    size_t nm[]=
+    {
+        ss.matrix_r->w,
+        ss.matrix_r->h
+    };
+    
+    size_t nm2 = nm[0] * nm[1];
+    
+    Matrix* r_row = matrix_to_vector(ss.matrix_r);
+    Matrix* g_row = matrix_to_vector(ss.matrix_g);
+    Matrix* b_row = matrix_to_vector(ss.matrix_b);
+    
+    double mode_r = matrix_mode_row(r_row, 0);
+    double mode_g = matrix_mode_row(g_row, 0);
+    double mode_b = matrix_mode_row(b_row, 0);
+    
+    matrix_free(r_row);
+    matrix_free(g_row);
+    matrix_free(b_row);
+    
+    double mode_media = (mode_r + mode_g + mode_b)/3.0;
+    size_t k = pos[0];
+    size_t l = pos[1];
+    
+    for(size_t i = 0; i < nm[0]; ++i)
+    for(size_t j = 0; j < nm[1]; ++j)
+        {
+            /*
+             if(    abs(  (ss(i,j,1)+ss(i,j,2)+ss(i,j,3) )/3 - moda_s_media  ) > d1 &&
+                    abs(  ss(i,j,1)-orig(k+i-1,l+j-1,1)  )>d2 && 
+                    abs(  ss(i,j,2)-orig(k+i-1,l+j-1,2)  )>d2 &&
+                    abs(  ss(i,j,3)-orig(k+i-1,l+j-1,3)  )>d2 )
+             */
+            if(fabs((matrix_get(ss.matrix_r, i, j)+matrix_get(ss.matrix_g, i, j)+matrix_get(ss.matrix_b, i, j))/3.0 - mode_media) > d1 &&
+               fabs(matrix_get(ss.matrix_r, i, j) - matrix_get(orig.matrix_r, k+i, l+j)) > d2 &&
+               fabs(matrix_get(ss.matrix_g, i, j) - matrix_get(orig.matrix_g, k+i, l+j)) > d2 &&
+               fabs(matrix_get(ss.matrix_b, i, j) - matrix_get(orig.matrix_b, k+i, l+j)) > d2
+               )
+            {
+                /*
+                 
+                 ss(i,j,1) = moda_s_r + (c*(ss(i,j,1)-moda_s_r) / (ss(i,j,1)));
+                 ss(i,j,2) = moda_s_g + (c*(ss(i,j,2)-moda_s_g) / (ss(i,j,2)));
+                 ss(i,j,3) = moda_s_b + (c*(ss(i,j,3)-moda_s_b) / (ss(i,j,3)));
+                 
+                 */
+                
+                matrix_set(ss.matrix_r, i, j, mode_r + (c*(matrix_get(ss.matrix_r, i, j)-mode_r))/matrix_get(ss.matrix_r, i, j) );
+                matrix_set(ss.matrix_g, i, j, mode_g + (c*(matrix_get(ss.matrix_g, i, j)-mode_r))/matrix_get(ss.matrix_g, i, j) );
+                matrix_set(ss.matrix_b, i, j, mode_b + (c*(matrix_get(ss.matrix_b, i, j)-mode_r))/matrix_get(ss.matrix_b, i, j) );
+            
+            }
+        }
+    
+}
+RGB_Matrix correct_color(RGB_Matrix orig_s,
+                         RGB_Matrix orig,
+                         size_t kk,
+                         double d1,
+                         double d2,
+                         double c)
+{
+    RGB_Matrix ss = rgb_matrix_copy(orig_s);
+    
+    size_t nm[]=
+    {
+        ss.matrix_r->w,
+        ss.matrix_r->h
+    };
+    
+    size_t nm2 = nm[0] * nm[1];
+    
+    if (kk==0)
+    {
+        size_t pos[] = { 0,0 };
+        RGB_Matrix ss_sub     = rgb_matrix_sub(ss, pos, nm);
+        correct_rgb(ss_sub, orig, pos, d1, d2, c);
+        rgb_matrix_put_from_sub_matrix(ss,ss_sub,pos);
+        matrix_rgb(ss_sub);
+    }
+    
+    size_t i = 0;
+    size_t j = 0;
+    
+    for ( i = 0; i < nm[0] - kk + 1; i += kk)
+    {
+        for ( j = 0; j < nm[1] - kk + 1; j += kk)
+        {
+            size_t pos[2]  = { i, j };
+            size_t sub_nm[2] = { kk - 1, kk - 1 };
+            RGB_Matrix ss_ij = rgb_matrix_sub(ss, pos, sub_nm);
+            correct_rgb(ss_ij, orig, pos, d1, d2, c);
+            rgb_matrix_put_from_sub_matrix(ss,ss_ij,pos);
+            matrix_rgb(ss_ij);
+            
+        }
+        size_t pos[2] = { i, j };
+        size_t sub_nm[2] = { kk - 1, nm[1] - j };
+        RGB_Matrix ss_ij = rgb_matrix_sub(ss, pos, sub_nm);
+        correct_rgb(ss_ij, orig, pos, d1, d2, c);
+        rgb_matrix_put_from_sub_matrix(ss,ss_ij,pos);
+        matrix_rgb(ss_ij);
+    }
+    for ( j = 0; j < nm[1] - kk + 1; j += kk )
+    {
+        size_t pos[2] = { i, j };
+        size_t sub_nm[2] = { nm[0] - i, kk-1 };
+        RGB_Matrix ss_ij = rgb_matrix_sub(ss, pos, sub_nm);
+        correct_rgb(ss_ij, orig, pos, d1, d2, c);
+        rgb_matrix_put_from_sub_matrix(ss,ss_ij,pos);
+        matrix_rgb(ss_ij);
+    }
+    size_t pos[2] = { i, j };
+    size_t sub_nm[2] = { nm[0]-i, nm[1]-j };
+    RGB_Matrix ss_ij = rgb_matrix_sub(ss, pos, sub_nm);
+    correct_rgb(ss_ij, orig, pos, d1, d2, c);
+    rgb_matrix_put_from_sub_matrix(ss,ss_ij,pos);
+    matrix_rgb(ss_ij);
+    
+    return ss;
+    
+}
+#endif
 
 int main(int argc,const char* argv[])
 {
-#if 0
+#if 1
     //paths
     const char* path_image[] =
     {
@@ -729,30 +878,47 @@ int main(int argc,const char* argv[])
         image[0].matrix_r->w,
         image[0].matrix_r->h
     };
+    
 	////////////////////////////////////////////////////////////////////////////////////
+    Matrix*     colors[2]={ NULL, NULL };
     //elements count
     size_t elements = size[0] * size[1];
 	//marge images?
 	bool b_not_merge = true;
-	//call split images (red channel)
-	Matrix*     colors_r[] = { image[0].matrix_r, image[1].matrix_r };
-	ImageMarge  images_r = b_not_merge ? marge_images_init(colors_r) : marge_images(colors_r);
+    //call split images (red channel)
+    colors[0] = image[0].matrix_r;
+    colors[1] = image[1].matrix_r;
+	ImageMarge  images_r = b_not_merge ? marge_images_init(colors) : marge_images(colors);
 				images_r = split_images(images_r, size, elements);
-	//call split images (green channel)
-    Matrix*     colors_g[] = { image[0].matrix_g, image[1].matrix_g };
-	ImageMarge  images_g = b_not_merge ? marge_images_init(colors_g) : marge_images(colors_g);
+    //call split images (green channel)
+    colors[0] = image[0].matrix_g;
+    colors[1] = image[1].matrix_g;
+	ImageMarge  images_g = b_not_merge ? marge_images_init(colors) : marge_images(colors);
 				images_g = split_images(images_g, size, elements);
-	//call split images (blue channel)
-	Matrix*     colors_b[] = { image[0].matrix_b, image[1].matrix_b };
-	ImageMarge  images_b = b_not_merge ? marge_images_init(colors_b) : marge_images(colors_b);
+    //call split images (blue channel)
+    colors[0] = image[0].matrix_b;
+    colors[1] = image[1].matrix_b;
+	ImageMarge  images_b = b_not_merge ? marge_images_init(colors) : marge_images(colors);
 				images_b = split_images(images_b, size, elements);
 
 	////////////////////////////////////////////////////////////////////////////////////
-	RGB_Matrix front_image = rgb_matrix_init(images_r.front, images_g.front, images_b.front);
-	//correct_color(front_image, image[0], size,  elements);
+    RGB_Matrix front_image = rgb_matrix_init(images_r.front, images_g.front, images_b.front);
+    //
 	RGB_Matrix back_image = rgb_matrix_init(images_r.back, images_g.back, images_b.back);
-	//correct_color(back_image, image[1], size, elements);
+    //
 	////////////////////////////////////////////////////////////////////////////////////
+#if 1
+    //correct_color(front_image, image[0], size, elements);
+    //correct_color(back_image, image[1], size, elements);
+#else
+    const int k = 100; //step for the grid
+    const double d1 = 5;  //minimun distance from mode
+    const double d2 = 5;  //minimun distance from original image
+    const double c = 1;   //correction factor
+    front_image = correct_color(front_image, image[0], k, d1, d2, c);
+    back_image = correct_color(back_image, image[1], k, d1, d2, c);
+#endif
+
 	rgb_matrix_to_tga_file("out_front.tga", front_image);
 	rgb_matrix_to_tga_file("out_back.tga", back_image);
 #else
@@ -765,6 +931,13 @@ int main(int argc,const char* argv[])
 		"assets/verso_stimato.tga",
 		"assets/recto_stimato.tga"
 	};
+    
+    
+    const int k = 100; //step for the grid
+    const double d1 = 5;  //minimun distance from mode
+    const double d2 = 5;  //minimun distance from original image
+    const double c = 1;   //correction factor
+    
 	//load images
 	RGB_Matrix image[2];
 	image[0] = rgb_matrix_from_tga_file(path_image[0]);
@@ -777,12 +950,24 @@ int main(int argc,const char* argv[])
 	};
 	//elements count
 	size_t elements = size[0] * size[1];
-
+    
 	RGB_Matrix front_image = rgb_matrix_from_tga_file(path_image[2]);
-	correct_color(front_image, image[0], size, elements);
-
 	RGB_Matrix back_image = rgb_matrix_from_tga_file(path_image[3]);
-	correct_color(back_image, image[1], size, elements);
+    
+#if 1
+    
+    correct_color(front_image, image[0], size, elements);
+    correct_color(back_image, image[1], size, elements);
+    
+#else
+    const int k = 100; //step for the grid
+    const double d1 = 5;  //minimun distance from mode
+    const double d2 = 5;  //minimun distance from original image
+    const double c = 1;   //correction factor
+    front_image = correct_color(front_image, image[0], k, d1, d2, c);
+    back_image = correct_color(back_image, image[1], k, d1, d2, c);
+#endif
+    
 
 	rgb_matrix_to_tga_file("_out_front.tga", front_image);
 	rgb_matrix_to_tga_file("_out_back.tga", back_image);

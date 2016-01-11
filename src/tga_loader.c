@@ -19,6 +19,7 @@
 #define ASPACKED( __Declaration__ ) __Declaration__ __attribute__((packed))
 #endif
 
+#define FLIP_IMAGE 0
 typedef unsigned char Byte;
 
 ASPACKED(struct TgaHeader
@@ -173,14 +174,14 @@ bool rgb_matrix_to_tga_file(const char* filepath,RGB_Matrix rgb_matrix)
     for(y=0;y!=header.height; ++y)
     for(x=0;x!=header.width; ++x)
     {
-#if 0
+#if FLIP_IMAGE
         data[(x+y*header.width)*channels+2] = (Byte)clamp(matrix_get(rgb_matrix.matrix_r, x, header.height - y - 1),0.0,255.0);
         data[(x+y*header.width)*channels+1] = (Byte)clamp(matrix_get(rgb_matrix.matrix_g, x, header.height - y - 1),0.0,255.0);
         data[(x+y*header.width)*channels+0] = (Byte)clamp(matrix_get(rgb_matrix.matrix_b, x, header.height - y - 1),0.0,255.0);
 #else
-		data[(x + y*header.width)*channels + 2] = (Byte)clamp(matrix_get(rgb_matrix.matrix_r, x, header.height - y - 1), 0.0, 255.0);
-		data[(x + y*header.width)*channels + 1] = (Byte)clamp(matrix_get(rgb_matrix.matrix_g, x, header.height - y - 1), 0.0, 255.0);
-		data[(x + y*header.width)*channels + 0] = (Byte)clamp(matrix_get(rgb_matrix.matrix_b, x, header.height - y - 1), 0.0, 255.0);
+		data[(x + y*header.width)*channels + 2] = (Byte)clamp(matrix_get(rgb_matrix.matrix_r, x,y), 0.0, 255.0);
+		data[(x + y*header.width)*channels + 1] = (Byte)clamp(matrix_get(rgb_matrix.matrix_g, x,y), 0.0, 255.0);
+		data[(x + y*header.width)*channels + 0] = (Byte)clamp(matrix_get(rgb_matrix.matrix_b, x,y), 0.0, 255.0);
 #endif
     }
     //write header
@@ -228,6 +229,13 @@ RGB_Matrix rgb_matrix_inverse(RGB_Matrix rgb_matrix)
     return output;
 }
 
+void rgb_matrix_put_from_sub_matrix(RGB_Matrix dest,const RGB_Matrix source,size_t pos[2])
+{
+    matrix_put_from_sub_matrix(dest.matrix_r,source.matrix_r,pos);
+    matrix_put_from_sub_matrix(dest.matrix_g,source.matrix_g,pos);
+    matrix_put_from_sub_matrix(dest.matrix_b,source.matrix_b,pos);
+}
+
 Matrix* r_matrix_inverse(Matrix* r_matrix)
 {
     Matrix* output = matrix_copy(r_matrix);
@@ -246,7 +254,7 @@ Matrix* r_matrix_sub(Matrix* r_matrix, size_t pos[2], size_t size[2])
 	assert(pos[0] + size[0] <= r_matrix->w);
 	assert(pos[1] + size[1] <= r_matrix->h);
 	Matrix* output = matrix_alloc(size[0], size[1]);
-#if 1
+#if 0
 	for (size_t x = 0; x != size[0]; ++x)
 	{
 		memcpy(output->buffer[x], &r_matrix->buffer[x+pos[0]][pos[1]], sizeof(double)*size[1]);
