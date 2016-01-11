@@ -21,7 +21,7 @@ typedef struct RGB_Matrix
 }
 RGB_Matrix;
 //rgb matrixs ops
-RGB_Matrix RGB_Matrix_init(Matrix* matrix_r,Matrix* matrix_g,Matrix* matrix_b);
+RGB_Matrix rgb_matrix_init(Matrix* matrix_r,Matrix* matrix_g,Matrix* matrix_b);
 RGB_Matrix rgb_matrix_from_tga_file(const char* filepath);
 RGB_Matrix rgb_matrix_inverse(RGB_Matrix rgb_matrix);
 RGB_Matrix rgb_matrix_normalize(RGB_Matrix rgb_matrix);

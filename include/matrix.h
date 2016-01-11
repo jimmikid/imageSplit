@@ -14,7 +14,7 @@
 //Definizione della struttura della matrice
 typedef struct Matrix
 {
-    int w,h;			//dimensione
+    size_t w,h;			//dimensione
     double **buffer;	//contiene i numeri della matrice
 }
 Matrix;
@@ -47,17 +47,17 @@ typedef struct Eigen2x2
 Eigen2x2;
 
 //Allocazione dinamica del tipo matrice
-Matrix* matrix_alloc(int w,int h);
+Matrix* matrix_alloc(size_t w,size_t h);
 //Alloca ed inizializza da un array di double
-Matrix* matrix_init(double* values,int w,int h);
+Matrix* matrix_init(double* values,size_t w,size_t h);
 //create a rotation matrix
 Matrix* matrix_rotate(double alpha);
 //Alloca una matrice di identità
-Matrix* matrix_identity(int w, int h);
+Matrix* matrix_identity(size_t w, size_t h);
 //Alloca una matrice sqrt(in)
 Matrix* matrix_sqrt(const Matrix* in);
 //Alloca una matrice diagonale
-Matrix* matrix_diagonal(int w,int h,double value);
+Matrix* matrix_diagonal(size_t w,size_t h,double value);
 //copia la matrice
 Matrix* matrix_copy(const Matrix* in);
 //Moltiplicazione Matrice Matrice
@@ -65,13 +65,13 @@ Matrix* matrix_multiply(const Matrix* a, const Matrix* b);
 //Somma Matrice Matrice
 Matrix* matrix_sum(const Matrix* a, const Matrix* b);
 //Media moda
-double matrix_mode_row(const Matrix* a,int row);
+double matrix_mode_row(const Matrix* a,size_t row);
 //fattorizazione di cholesky
 Matrix* matrix_cholesky_factorization(const Matrix* a);
 //matrix to vector
 Matrix* matrix_to_vector(const Matrix* in);
 //row vector to matrix
-Matrix* matrix_from_vector(const Matrix* in, int row,int w,int h);
+Matrix* matrix_from_vector(const Matrix* in, size_t col,size_t w,size_t h);
 //Moltiplicazione Matrice per scalare
 Matrix* matrix_multiply_to_scalar(const Matrix* a, double scalar);
 //Somma uno scalare
@@ -81,13 +81,13 @@ void matrix_sum_scalar_inplace(Matrix* a, double scalar);
 //Moltiplicazione Matrice per scalare
 void matrix_multiply_to_scalar_inplace(Matrix* a, double scalar);
 //Imposta tutti i valori della matrice
-void matrix_set(Matrix* in,int x,int y,double val);
+void matrix_set(Matrix* in,size_t x,size_t y,double val);
 //restituisce tutti i valori della matrice
-double matrix_get(const Matrix* in,int x,int y);
+double matrix_get(const Matrix* in,size_t x,size_t y);
 //restituisce tutti i valori della matrice (sicuro)
-double matrix_get_safe(const Matrix* in,int x,int y);
+double matrix_get_safe(const Matrix* in,size_t x,size_t y);
 //get normalize value
-double matrix_get_safe_norm(const Matrix* in,int x,int y);
+double matrix_get_safe_norm(const Matrix* in,size_t x,size_t y);
 //Libera memoria allocata
 void matrix_free(Matrix* in);
 //legge da file gimp
@@ -114,9 +114,9 @@ void eigenvectors2x2_free(Eigenvctors2x2 values);
 //Libera memoria allocata
 void eigen2x2_free(Eigen2x2 values);
 //Normalizzazione vettore
-Matrix* matrix_column_normalized(const Matrix* in, int icolumn);
+Matrix* matrix_column_normalized(const Matrix* in, size_t icolumn);
 //normalizza il vettore dato
-void matrix_column_normalized_inplace(Matrix* inout, int icolumn);
+void matrix_column_normalized_inplace(Matrix* inout, size_t icolumn);
 //Trasposta matrice
 Matrix* matrix_transpose(const Matrix* in);
 //Inversa matrice 2x2 

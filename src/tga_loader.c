@@ -86,21 +86,22 @@ RGB_Matrix rgb_matrix_from_tga_file(const char* filepath)
     //success to read
     output.success = true;
     //from data to matrixes
-    int x = 0;
-    int y = 0;
+	size_t x = 0;
+	size_t y = 0;
+	//tga has flip image
     for(y=0;y!=header.height; ++y)
     {
         for(x=0;x!=header.width; ++x)
         {
             //get pixel
             Byte* pixel = &data[(x+y*header.width)*channels];
-            //pixel[0] R
+            //pixel[0] B
             //pixel[1] G
-            //pixel[2] B
+            //pixel[2] R
             //pixel[3] A
-            matrix_set(output.matrix_r, x, y,  ((double)pixel[0])/*/255.0*/);
-            matrix_set(output.matrix_g, x, y,  ((double)pixel[1])/*/255.0*/);
-            matrix_set(output.matrix_b, x, y,  ((double)pixel[2])/*/255.0*/);
+            matrix_set(output.matrix_r, x, header.height - y - 1,  ((double)pixel[2])/*/255.0*/);
+            matrix_set(output.matrix_g, x, header.height - y - 1,  ((double)pixel[1])/*/255.0*/);
+            matrix_set(output.matrix_b, x, header.height - y - 1,  ((double)pixel[0])/*/255.0*/);
         };
     }
     //dealloc
@@ -138,14 +139,14 @@ bool rgb_matrix_to_tga_file(const char* filepath,RGB_Matrix rgb_matrix)
     //alloc
     Byte* data = (Byte*) calloc(size,1);
     //from matrixes to data
-    int x = 0;
-    int y = 0;
+    size_t x = 0;
+	size_t y = 0;
     for(y=0;y!=header.height; ++y)
     for(x=0;x!=header.width; ++x)
     {
-        data[(x+y*header.width)*channels  ] = (Byte)(matrix_get(rgb_matrix.matrix_r, x, y)/**255.0*/);
-        data[(x+y*header.width)*channels+1] = (Byte)(matrix_get(rgb_matrix.matrix_g, x, y)/**255.0*/);
-        data[(x+y*header.width)*channels+2] = (Byte)(matrix_get(rgb_matrix.matrix_b, x, y)/**255.0*/);
+        data[(x+y*header.width)*channels+2] = (Byte)(matrix_get(rgb_matrix.matrix_r, x, header.height - y - 1)/**255.0*/);
+        data[(x+y*header.width)*channels+1] = (Byte)(matrix_get(rgb_matrix.matrix_g, x, header.height - y - 1)/**255.0*/);
+        data[(x+y*header.width)*channels+0] = (Byte)(matrix_get(rgb_matrix.matrix_b, x, header.height - y - 1)/**255.0*/);
     }
     //write header
     fwrite(&header, sizeof(struct TgaHeader), 1, pfile);
@@ -158,7 +159,7 @@ bool rgb_matrix_to_tga_file(const char* filepath,RGB_Matrix rgb_matrix)
     return true;
 }
 
-RGB_Matrix RGB_Matrix_init(Matrix* matrix_r,Matrix* matrix_g,Matrix* matrix_b)
+RGB_Matrix rgb_matrix_init(Matrix* matrix_r,Matrix* matrix_g,Matrix* matrix_b)
 {
     RGB_Matrix output;
     output.success = true;
@@ -181,8 +182,8 @@ RGB_Matrix rgb_matrix_inverse(RGB_Matrix rgb_matrix)
 {
     RGB_Matrix output = rgb_matrix_copy(rgb_matrix);
     
-    for(int y=0;y!=output.matrix_r->h;++y)
-    for(int x=0;x!=output.matrix_r->w;++x)
+    for(size_t y=0;y!=output.matrix_r->h;++y)
+    for(size_t x=0;x!=output.matrix_r->w;++x)
     {
         matrix_set(output.matrix_r, x, y, 255.0-matrix_get(output.matrix_r, x, y));
         matrix_set(output.matrix_g, x, y, 255.0-matrix_get(output.matrix_g, x, y));
@@ -196,8 +197,8 @@ Matrix* r_matrix_inverse(Matrix* r_matrix)
 {
     Matrix* output = matrix_copy(r_matrix);
     
-    for(int y=0;y!=output->h;++y)
-    for(int x=0;x!=output->w;++x)
+    for(size_t y=0;y!=output->h;++y)
+    for(size_t x=0;x!=output->w;++x)
     {
         matrix_set(output, x, y, 255.0-matrix_get(r_matrix, x, y));
     }
@@ -209,8 +210,8 @@ RGB_Matrix rgb_matrix_normalize(RGB_Matrix rgb_matrix)
 {
     RGB_Matrix output = rgb_matrix_copy(rgb_matrix);
     
-    for(int y=0;y!=output.matrix_r->h;++y)
-        for(int x=0;x!=output.matrix_r->w;++x)
+    for(size_t y=0;y!=output.matrix_r->h;++y)
+        for(size_t x=0;x!=output.matrix_r->w;++x)
         {
             matrix_set(output.matrix_r, x, y, matrix_get(output.matrix_r, x, y) / 255.0);
             matrix_set(output.matrix_g, x, y, matrix_get(output.matrix_g, x, y) / 255.0);
@@ -224,8 +225,8 @@ RGB_Matrix rgb_matrix_denormalize(RGB_Matrix rgb_matrix)
 {
     RGB_Matrix output = rgb_matrix_copy(rgb_matrix);
     
-    for(int y=0;y!=output.matrix_r->h;++y)
-    for(int x=0;x!=output.matrix_r->w;++x)
+    for(size_t y=0;y!=output.matrix_r->h;++y)
+    for(size_t x=0;x!=output.matrix_r->w;++x)
     {
         matrix_set(output.matrix_r, x, y, matrix_get(output.matrix_r, x, y) * 255.0);
         matrix_set(output.matrix_g, x, y, matrix_get(output.matrix_g, x, y) * 255.0);

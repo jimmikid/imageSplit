@@ -14,7 +14,7 @@
 #include <math.h>
 
 //Allocazione dinamica del tipo matrice
-Matrix* matrix_alloc(int w,int h)
+Matrix* matrix_alloc(size_t w,size_t h)
 {
     //allocazione della struttura matrice
     Matrix* output = (Matrix*) malloc(sizeof(Matrix));
@@ -25,18 +25,18 @@ Matrix* matrix_alloc(int w,int h)
     output->buffer = (double**)malloc(sizeof(double*)*w);
     
     //allocazione delle colonne
-    for (int i = 0; i < w; i++)
+    for (size_t i = 0; i < w; i++)
     {
         output->buffer[i] = calloc(sizeof(double),h);
     }
     return output;
 }
 //Alloca ed inizializza da un array di double
-Matrix* matrix_init(double* values,int w,int h)
+Matrix* matrix_init(double* values,size_t w,size_t h)
 {
     Matrix* output = matrix_alloc(w,h);
-    for(int x=0;x!=w;++x)
-    for(int y=0;y!=h;++y)
+    for(size_t x=0;x!=w;++x)
+    for(size_t y=0;y!=h;++y)
     {
         matrix_set(output, x, y, values[y*w+x]);
     }
@@ -45,9 +45,9 @@ Matrix* matrix_init(double* values,int w,int h)
 //create a rotation matrix
 Matrix* matrix_rotate(double alpha)
 {
-	double s = sin(alpha);
-	double c = cos(alpha);
-	double r_init[] =
+	const double s = sin(alpha);
+	const double c = cos(alpha);
+	const double r_init[] =
 	{
 		s,-c,
 		c, s
@@ -55,14 +55,14 @@ Matrix* matrix_rotate(double alpha)
 	return matrix_init(r_init,2,2);
 }
 //Alloca una matrice di identità
-Matrix* matrix_identity(int w,int h)
+Matrix* matrix_identity(size_t w,size_t h)
 {
     //alloc
     Matrix* output = matrix_alloc(w,h);
     //get min size
-    int mwh = w < h ? w : h;
+    size_t mwh = w < h ? w : h;
     //fill all
-    for(int xy=0;xy!=mwh;++xy)
+    for(size_t xy=0;xy!=mwh;++xy)
         matrix_set(output, xy, xy, 1.0);
     //return matrix
     return output;
@@ -71,17 +71,17 @@ Matrix* matrix_identity(int w,int h)
 Matrix* matrix_sqrt(const Matrix* in)
 {
 	Matrix* output = matrix_alloc(in->w, in->h);
-	for (int x = 0; x != in->w; ++x)
-	for (int y = 0; y != in->h; ++y)
+	for (size_t x = 0; x != in->w; ++x)
+	for (size_t y = 0; y != in->h; ++y)
 	{
 		matrix_set(output, x, y, sqrt(matrix_get(in,x,y)));
 	}
 	return output;
 }
 //merge sort
-static void merge_aux(double *a, int n, int m)
+static void merge_aux(double *a, size_t n, size_t m)
 {
-	int i, j, k;
+	size_t i, j, k;
 	double *x = malloc(n * sizeof(double));
 	for (i = 0, j = m, k = 0; k < n; k++) 
 	{
@@ -96,28 +96,28 @@ static void merge_aux(double *a, int n, int m)
 	}
 	free(x);
 }
-static void merge_sort_aux(double *a, int n)
+static void merge_sort_aux(double *a, size_t n)
 {
 	if (n < 2) return;
-	int m = n / 2;
+	size_t m = n / 2;
 	merge_sort_aux(a, m);
 	merge_sort_aux(a + m, n - m);
 	merge_aux(a, n, m);
 }
 
-static void merge_sort(Matrix* matrix, int col)
+static void merge_sort(Matrix* matrix, size_t col)
 {
 	merge_sort_aux(matrix->buffer[col], matrix->h);
 }
 //Media moda
-double matrix_mode_row(const Matrix* a,int row)
+double matrix_mode_row(const Matrix* a,size_t row)
 {
     //assert...
     assert(a->w);
     //alloc
     Matrix* tmp_m = matrix_alloc(1, a->w);
     //copy
-    for(int x=0;x!=a->w;++x)
+    for(size_t x=0;x!=a->w;++x)
     {
         matrix_set(tmp_m,0,x,matrix_get(a,x,row));
     }
@@ -129,7 +129,7 @@ double matrix_mode_row(const Matrix* a,int row)
     size_t tmp_count  = 0;
     double tmp_output = matrix_get(tmp_m,0,0);
     
-    for(int y=1;y!=tmp_m->h;++y)
+    for(size_t y=1;y!=tmp_m->h;++y)
     {
         if( tmp_output == matrix_get(tmp_m,0,y) )
         {
@@ -164,13 +164,13 @@ Matrix* matrix_cholesky_factorization(const Matrix* a)
     if(a->w!=a->h) return NULL;
     Matrix* L = matrix_alloc(a->w,a->w);
     
-    for (int i = 0; i != a->w; ++i)
+    for (size_t i = 0; i != a->w; ++i)
     {
-        for (int j = 0; j < (i+1); ++j)
+        for (size_t j = 0; j < (i+1); ++j)
         {
             double s = 0;
             
-            for (int k = 0; k < j; ++k)
+            for (size_t k = 0; k < j; ++k)
             {
                 s += matrix_get(L, k, i) *  matrix_get(L, k, j);
                 /* s += L[i * n + k] * L[j * n + k]; */
@@ -189,14 +189,14 @@ Matrix* matrix_cholesky_factorization(const Matrix* a)
     return L;
 }
 //alloca una matrice diagonale
-Matrix* matrix_diagonal(int w,int h,double value)
+Matrix* matrix_diagonal(size_t w,size_t h,double value)
 {
     //alloc
     Matrix* output = matrix_alloc(w,h);
     //get min size
-    int mwh = w < h ? w : h;
+    size_t mwh = w < h ? w : h;
     //fill all
-    for(int xy=0;xy!=mwh;++xy)
+    for(size_t xy=0;xy!=mwh;++xy)
         matrix_set(output, xy, xy, value);
     //return matrix
     return output;
@@ -206,7 +206,7 @@ Matrix* matrix_diagonal(int w,int h,double value)
 Matrix* matrix_copy(const Matrix* in)
 {
     Matrix* output = matrix_alloc(in->w, in->h);
-    for(int x=0;x!=in->w;++x)
+    for(size_t x=0;x!=in->w;++x)
     {
         memcpy(output->buffer[x], in->buffer[x], sizeof(double)*in->h);
     }
@@ -216,15 +216,15 @@ Matrix* matrix_copy(const Matrix* in)
 //Moltiplicazione Matrice Matrice
 Matrix* matrix_multiply(const Matrix* a, const Matrix* b)
 {
-    if(a->h != b->w) return NULL;
+    if(a->w != b->h) return NULL;
     
-    Matrix* output = matrix_alloc(a->h, b->w);
+    Matrix* output = matrix_alloc(b->w, a->h);
     
-    for (int y = 0; y != output->h; ++y)
-    for (int x = 0; x != output->w; ++x)
+    for (size_t y = 0; y != output->h; ++y)
+    for (size_t x = 0; x != output->w; ++x)
     {
         double sum = 0;
-        for (int k = 0; k != b->h; ++k)
+        for (size_t k = 0; k != b->h; ++k)
             sum += matrix_get(a, k, y) * matrix_get(b, x, k);
         
         matrix_set(output, x, y, sum);
@@ -239,8 +239,8 @@ Matrix* matrix_sum(const Matrix* a, const Matrix* b)
     
     Matrix* output = matrix_alloc(a->w, a->h);
     
-    for(int y=0;y!=output->h;++y)
-    for(int x=0;x!=output->w;++x)
+    for(size_t y=0;y!=output->h;++y)
+    for(size_t x=0;x!=output->w;++x)
     {
         matrix_set(output, x, y, matrix_get(a, x, y) + matrix_get(b, x, y) );
     }
@@ -251,27 +251,27 @@ Matrix* matrix_sum(const Matrix* a, const Matrix* b)
 Matrix* matrix_to_vector(const Matrix* in)
 {
     Matrix* output = matrix_alloc(in->w*in->h, 1);
-    
-    for(int y=0;y!=in->h;++y)
-    for(int x=0;x!=in->w;++x)
+
+	for (size_t x = 0; x != in->w; ++x)
+	for (size_t y = 0; y != in->h; ++y)
     {
-        matrix_set(output, x+y*in->w, 0, matrix_get(in,x,y));
+        matrix_set(output, y+x*in->h, 0, matrix_get(in,x,y));
     }
     
     return output;
 }
 //row vector to matrix
-Matrix* matrix_from_vector(const Matrix* in, int row,int w,int h)
+Matrix* matrix_from_vector(const Matrix* in, size_t col,size_t w,size_t h)
 {
     //filter
-    if(w*h > in->w) return NULL;
+    if(w*h > in->h) return NULL;
     //alloc matrix
     Matrix* output = matrix_alloc(w,h);
-    
-    for(int y=0;y!=w;++y)
-    for(int x=0;x!=h;++x)
+
+	for (size_t x = 0; x != w; ++x)
+	for (size_t y = 0; y != h; ++y)
     {
-        matrix_set(output, x, y, matrix_get(in,x+y*w,row));
+        matrix_set(output, x, y, matrix_get(in,col,y+x*h));
     }
     
     return output;
@@ -281,8 +281,8 @@ Matrix* matrix_multiply_to_scalar(const Matrix* a, double scalar)
 {
     Matrix* output = matrix_alloc(a->w, a->h);
     
-    for (int y = 0; y != output->h; ++y)
-    for (int x = 0; x != output->w; ++x)
+    for (size_t y = 0; y != output->h; ++y)
+    for (size_t x = 0; x != output->w; ++x)
     {
         matrix_set(output, x, y, matrix_get(a, x, y) * scalar);
     }
@@ -292,8 +292,8 @@ Matrix* matrix_multiply_to_scalar(const Matrix* a, double scalar)
 //Moltiplicazione Matrice per scalare
 void matrix_multiply_to_scalar_inplace(Matrix* a, double scalar)
 {
-    for (int y = 0; y != a->h; ++y)
-    for (int x = 0; x != a->w; ++x)
+    for (size_t y = 0; y != a->h; ++y)
+    for (size_t x = 0; x != a->w; ++x)
     {
         matrix_set(a, x, y, matrix_get(a, x, y) * scalar);
     }
@@ -303,8 +303,8 @@ Matrix* matrix_sum_scalar(const Matrix* a, double scalar)
 {
     Matrix* output = matrix_alloc(a->w, a->h);
     
-    for (int y = 0; y != output->h; ++y)
-    for (int x = 0; x != output->w; ++x)
+    for (size_t y = 0; y != output->h; ++y)
+    for (size_t x = 0; x != output->w; ++x)
     {
         matrix_set(output, x, y, matrix_get(a, x, y) + scalar);
     }
@@ -314,25 +314,25 @@ Matrix* matrix_sum_scalar(const Matrix* a, double scalar)
 //Somma uno scalare
 void matrix_sum_scalar_inplace(Matrix* a, double scalar)
 {
-    for (int y = 0; y != a->h; ++y)
-    for (int x = 0; x != a->w; ++x)
+    for (size_t y = 0; y != a->h; ++y)
+    for (size_t x = 0; x != a->w; ++x)
     {
         matrix_set(a, x, y, matrix_get(a, x, y) + scalar);
     }
 }
 //Imposta tutti i valori della matrice
-void matrix_set(Matrix* in,int x,int y,double val)
+void matrix_set(Matrix* in,size_t x,size_t y,double val)
 {
     in->buffer[x][y] = val;
 }
 
 //restituisce tutti i valori della matrice
-double matrix_get(const Matrix* in,int x,int y)
+double matrix_get(const Matrix* in,size_t x,size_t y)
 {
     return in->buffer[x][y];
 }
 //restituisce tutti i valori della matrice (sicuro)
-double matrix_get_safe(const Matrix* in,int x,int y)
+double matrix_get_safe(const Matrix* in,size_t x,size_t y)
 {
     x = x < in->w ? x : in->w-1;
     x = x < 0     ? 0 : x;
@@ -343,7 +343,7 @@ double matrix_get_safe(const Matrix* in,int x,int y)
     return in->buffer[x][y];
 }
 //get normalize value
-double matrix_get_safe_norm(const Matrix* in,int x,int y)
+double matrix_get_safe_norm(const Matrix* in,size_t x,size_t y)
 {
     return matrix_get_safe(in,x,y) / 255.0;
 }
@@ -351,7 +351,7 @@ double matrix_get_safe_norm(const Matrix* in,int x,int y)
 //Libera memoria allocata
 void matrix_free(Matrix* in)
 {
-    for (int i = 0; i < in->w; i++)
+    for (size_t i = 0; i < in->w; i++)
     {
         free(in->buffer[i]);
     }
@@ -365,7 +365,7 @@ Matrix* matrix_from_gimp_file (char *filename)
     char *res = NULL;
     FILE *fp  = NULL;
     char buf[256];                      //Buffer per la lettura dei dati da file
-    int *dimensione;                    //allocazione di un array in memoria
+    size_t *dimensione;                    //allocazione di un array in memoria
     dimensione = malloc(2*sizeof(int)); //allocazione dinamica dell'array di due elementi(quelli che verranno letti nel file)
     fp = fopen(filename, "rb");          //apertura del file in lettura
     if(!fp) return NULL;
@@ -383,8 +383,8 @@ Matrix* matrix_from_gimp_file (char *filename)
     //Inizializzaione e allocazione dinamica della matrice
     Matrix* output = matrix_alloc(dimensione[0],dimensione[1]);
     
-    for(int x=0;x!=output->w;++x)
-        for(int y=0;y!=output->h;++y)
+    for(size_t x=0;x!=output->w;++x)
+        for(size_t y=0;y!=output->h;++y)
         {
             //read
             res = fgets(buf, 256, fp);
@@ -422,8 +422,8 @@ void matrix_save_only_buffer(const char* path, const Matrix* in)
         //write header
         fwrite(hbuffer,sizeof(char),strlen(hbuffer),file);
         //write image
-        for(int x=0;x!=in->w;++x)
-            for(int y=0;y!=in->h;++y)
+        for(size_t x=0;x!=in->w;++x)
+            for(size_t y=0;y!=in->h;++y)
             {
                 //set value
                 double value = matrix_get(in,x,y);
@@ -442,9 +442,9 @@ void matrix_save_only_buffer(const char* path, const Matrix* in)
 //print matrix
 void matrix_print(const Matrix* in)
 {
-    for(int y=0; y != in->h ; ++y)
+    for(size_t y=0; y != in->h ; ++y)
     {
-        for(int x=0; x != in->w ; ++x)
+        for(size_t x=0; x != in->w ; ++x)
         {
             printf("%0.3f\t",matrix_get(in, x, y));
         }
@@ -559,14 +559,14 @@ Eigen2x2 matrix_eigen2x2(Matrix* in)
 	//create init matrix
 	double init_values_v[] =
 	{
-		matrix_get(vectors.v1,0,0),matrix_get(vectors.v2,0,0),
-		matrix_get(vectors.v1,0,1),matrix_get(vectors.v2,0,1),
+		matrix_get(vectors.v2,0,0),matrix_get(vectors.v1,0,0),
+		matrix_get(vectors.v2,0,1),matrix_get(vectors.v1,0,1),
 	};
 	//create init matrix
 	double init_values_d[] =
 	{
-		values.lambda1,           0.0,
-				   0.0,values.lambda2
+		values.lambda2,           0.0,
+				   0.0,values.lambda1
 	};
 	//dealloc vectors
 	eigenvectors2x2_free(vectors);
@@ -602,34 +602,34 @@ void eigen2x2_free(Eigen2x2 values)
 }
 
 //Normalizzazione vettore
-Matrix* matrix_column_normalized(const Matrix* in, int icolumn)
+Matrix* matrix_column_normalized(const Matrix* in, size_t icolumn)
 {
     Matrix* output = matrix_alloc(1, in->h);
     
     double sum = 0.0;
     //calcolo lunghezza del vettore
-    for(int y=0; y!=in->h; ++y)
+    for(size_t y=0; y!=in->h; ++y)
         sum += matrix_get(in,icolumn,y) * matrix_get(in,icolumn,y);
     
     double mag = sqrt(sum);
     //normalizzazione degli elementi del vettore
-    for(int y=0; y!=output->h; ++y)
+    for(size_t y=0; y!=output->h; ++y)
         matrix_set(output, icolumn, y, matrix_get(in,icolumn,y) / mag );
     
     return output;
 }
 //normalizza il vettore dato
-void matrix_column_normalized_inplace(Matrix* inout, int icolumn)
+void matrix_column_normalized_inplace(Matrix* inout, size_t icolumn)
 {
     
     double sum = 0.0;
     //calcolo lunghezza del vettore
-    for(int y=0; y!=inout->h; ++y)
+    for(size_t y=0; y!=inout->h; ++y)
         sum += matrix_get(inout,icolumn,y) * matrix_get(inout,icolumn,y);
     
     double mag = sqrt(sum);
     //normalizzazione degli elementi del vettore
-    for(int y=0; y!=inout->h; ++y)
+    for(size_t y=0; y!=inout->h; ++y)
         matrix_set(inout, icolumn, y, matrix_get(inout,icolumn,y) / mag );
 }
 //trasporre matrice
@@ -637,8 +637,8 @@ Matrix* matrix_transpose(const Matrix* in)
 {
     Matrix* output = matrix_alloc(in->h, in->w);
     
-    for(int x = 0; x != output->w; ++x)
-        for(int y = 0; y != output->h; ++y)
+    for(size_t x = 0; x != output->w; ++x)
+        for(size_t y = 0; y != output->h; ++y)
         {
             matrix_set(output, x, y, matrix_get(in, y, x));
         }
@@ -656,8 +656,8 @@ Matrix* matrix_inv2x2(const Matrix* in)
 
 	matrix_set(output, 0, 0, (matrix_get(in, 1, 1)) / det);
 	matrix_set(output, 1, 1, (matrix_get(in, 0, 0)) / det);
-	matrix_set(output, 1, 0, -(matrix_get(in, 1, 0)) / det);
-	matrix_set(output, 0, 1, -(matrix_get(in, 0, 1)) / det);
+	matrix_set(output, 0, 1, -(matrix_get(in, 1, 0)) / det);
+	matrix_set(output, 1, 0, -(matrix_get(in, 0, 1)) / det);
 
 	return output;
 }

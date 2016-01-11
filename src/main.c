@@ -113,11 +113,45 @@ ImageMarge marge_images(Matrix* s[2])
 	return output;
 }
 
+Matrix* put_x_into_matrix_row(Matrix* x[2], size_t N)
+{
+	//Metodo che trasformi vettore di 2 matrici 
+	//a singola colonna in una matrice con 2 colonne...
+	Matrix* x2 = matrix_alloc(N, 2);
+	//copy all elements into new Matrix
+	for (size_t y = 0; y != N; ++y)
+	{
+		matrix_set(x2, y, 0, matrix_get(x[0], y, 0));
+		matrix_set(x2, y, 1, matrix_get(x[1], y, 0));
+	}
+	return x2;
+}
+
+Matrix* put_x_into_matrix_col(Matrix* x[2], size_t N)
+{
+	//Metodo che trasformi vettore di 2 matrici 
+	//a singola colonna in una matrice con 2 colonne...
+	Matrix* x2 = matrix_alloc(2, N);
+	//copy all elements into new Matrix
+	for (size_t y = 0; y != N; ++y)
+	{
+		matrix_set(x2, 0, y, matrix_get(x[0], y, 0));
+		matrix_set(x2, 1, y, matrix_get(x[1], y, 0));
+	}
+	return x2;
+}
+
 double compute_funz_ob_theta(Matrix* L, Matrix* x[2], size_t N, double theta)
 {
 	Matrix* U = matrix_rotate(theta);
 	Matrix* A = matrix_multiply(L, U);
-
+	//debug
+#if defined( MODE_DEBUG ) && 0
+	printf("U:\n");
+	matrix_print(U);
+	printf("A:\n");
+	matrix_print(A);
+#endif
 	double sum[] =
 	{
 		matrix_get(A,0,0) + matrix_get(A,1,0),
@@ -129,25 +163,29 @@ double compute_funz_ob_theta(Matrix* L, Matrix* x[2], size_t N, double theta)
 
 	matrix_set(A, 0, 1, matrix_get(A, 0, 1) / sum[1]);
 	matrix_set(A, 1, 1, matrix_get(A, 1, 1) / sum[1]);
-	
+
 	Matrix* A_t   = matrix_transpose(A);
 	Matrix* A_t_i = matrix_inv2x2(A);
 
-	//Bisogna fare un metodo che trasformi vettore di 2 matrici 
-	//a singola colonna in una matrice con 2 colonne...
-	Matrix* x2 = matrix_alloc(2, N);
-	//copy all elements into new Matrix
-	for (int y = 0; y != N; ++y)
-	{
-		matrix_set(x2, 0, y, matrix_get(x[0], 0, y));
-		matrix_set(x2, 1, y, matrix_get(x[1], 0, y));
-	}
+	//put 2 col. matrix into a matrix Nx2
+	Matrix* x2 = put_x_into_matrix_col(x, N);
+
+	//debug
+#if defined( MODE_DEBUG ) && 0
+	printf("A normalized:\n");
+	matrix_print(A);
+	printf("A':\n");
+	matrix_print(A_t);
+	printf("inv(A'):\n");
+	matrix_print(A_t_i);
+#endif
+
 	//compute sk
 	Matrix* sk = matrix_multiply(x2, A_t_i);
 	const double s_min = 0;
 	const double s_max = 255;
 
-	for (int y = 0; y != N; ++y)
+	for (size_t y = 0; y != N; ++y)
 	{
 		if (matrix_get(sk, 0, y) < s_min) matrix_set(sk, 0, y, s_min);
 		if (matrix_get(sk, 1, y) < s_min) matrix_set(sk, 1, y, s_min);
@@ -156,17 +194,23 @@ double compute_funz_ob_theta(Matrix* L, Matrix* x[2], size_t N, double theta)
 		if (matrix_get(sk, 1, y) > s_max) matrix_set(sk, 1, y, s_max);
 		*/
 	}
+#if defined( MODE_DEBUG ) && 0
+	printf("SK:\n");
+	matrix_print(sk);
+#endif
 	//compute output
 	double n = 0;
 	//sum all components
-	for (int y = 0; y != N; ++y)
+	for (size_t y = 0; y != N; ++y)
 	{
-		n += abs(matrix_get(sk, 0, y) + matrix_get(sk, 1, y));
+		n += abs(matrix_get(sk, 0, y) * matrix_get(sk, 1, y));
 	}
+
 	//dealloc all
 	matrix_free(U);
 	matrix_free(A);
 	matrix_free(x2);
+	matrix_free(sk);
 	matrix_free(A_t);
 	matrix_free(A_t_i);
 	//return computed value
@@ -234,8 +278,8 @@ EstimateThetaReturn estimate_theta_funz(Matrix* L, Matrix* x[2], size_t nm2, dou
 		++loop_count;
 	};
 
-	double r  = (sqrt(5.) - 1.) / 2.;
-	double r1 = 1 - r;
+	const double r  = (sqrt(5.) - 1.) / 2.;
+	const double r1 = 1 - r;
 
 #if 0
 	//x(1) == x[0](0,0);
@@ -294,11 +338,11 @@ EstimateThetaReturn estimate_theta_funz(Matrix* L, Matrix* x[2], size_t nm2, dou
 	}
 #else
 	//ipotizzando che sia stata programmata da 
-	//una scimmia che non sà programmare...
+	//una scimmia che non sa programmare...
 	double tmp[4] = { 0.0, 0.0, 0.0, 0.0 };
 
 	tmp[0] = theta_v[0];
-	tmp[3] = theta_v[3];
+	tmp[3] = theta_v[2];
 
 	if (fabs(theta_v[2] - theta_v[1]) > fabs(theta_v[1] - theta_v[0]))
 	{
@@ -315,7 +359,7 @@ EstimateThetaReturn estimate_theta_funz(Matrix* L, Matrix* x[2], size_t nm2, dou
 	funz_ob[3] = compute_funz_ob_theta(L, x, nm2, tmp[3]);
 	funz_ob[2] = compute_funz_ob_theta(L, x, nm2, tmp[2]);
 
-	while (fabs(tmp[2] - tmp[1]) > 1.0e-9)
+	while (fabs(tmp[2] - tmp[1]) > 1.0e-10)
 	{
 
 		if (funz_ob[2] < funz_ob[1])
@@ -367,7 +411,7 @@ Matrix* estimate(Matrix* x[2], size_t nm2)
 	Matrix* C_v[] =
 	{
 		matrix_multiply(x[0], t_x[0]), matrix_multiply(x[0], t_x[1]),
-		matrix_multiply(x[1], t_x[0]), matrix_multiply(x[1], t_x[1]) 
+		matrix_multiply(x[1], t_x[0]), matrix_multiply(x[1], t_x[1])
 	};
 	//create c init
 	double C_init[]=
@@ -388,16 +432,24 @@ Matrix* estimate(Matrix* x[2], size_t nm2)
 	//compute U
 	Matrix* U     = matrix_rotate(estimate_t.theta);
 	Matrix* new_L = matrix_multiply(L, U);
+#if defined( MODE_DEBUG ) && 0
+	printf("new_L:\n");
+	matrix_print(new_L);
+#endif
 	//compute sum1/2
-	double sum1 = matrix_get(L, 1, 1) + matrix_get(L, 2, 1);
-	double sum2 = matrix_get(L, 1, 2) + matrix_get(L, 2, 2);
+	double sum1 = matrix_get(L, 0, 0) + matrix_get(L, 1, 0);
+	double sum2 = matrix_get(L, 0, 1) + matrix_get(L, 1, 1);
 	//compute estimate
 	double A_estimate_init[] =
 	{
-		matrix_get(L, 1, 1)/sum1, matrix_get(L, 2, 1)/sum1,
-		matrix_get(L, 1, 2)/sum2, matrix_get(L, 2, 2)/sum2
+		matrix_get(L, 0, 0)/sum1, matrix_get(L, 1, 0)/sum1,
+		matrix_get(L, 0, 1)/sum2, matrix_get(L, 1, 1)/sum2
 	};
 	Matrix* A_estimate = matrix_init(A_estimate_init,2, 2);
+#if defined( MODE_DEBUG ) && 0
+	printf("A_estimate:\n");
+	matrix_print(A_estimate);
+#endif
 	//dealoc all
 	int i = 0;
 	for (i = 0; i != 2; ++i) matrix_free(t_x[i]);
@@ -414,41 +466,113 @@ Matrix* estimate(Matrix* x[2], size_t nm2)
 	return A_estimate;
 }
 
-void split_images(ImageMarge images,  size_t nm[2], size_t nm2)
+ImageMarge split_images(ImageMarge images,  size_t nm[2], size_t nm2)
 {
 	//front/back to vector
 	Matrix* front_row = matrix_to_vector(images.front);
 	Matrix* back_row = matrix_to_vector(images.back);
+	//debug
+#if defined( MODE_DEBUG ) && 0
+	printf("Front vector:\n");
+	matrix_print(front_row);
+	printf("Back vector:\n");
+	matrix_print(back_row);
+#endif
     //inv front and back
-    Matrix* front_inv=r_matrix_inverse(images.front);
-    Matrix* back_inv =r_matrix_inverse(images.back);
-    //front/back to vector
-    Matrix* front_inv_row = matrix_to_vector(front_inv);
-    Matrix* back_inv_row  = matrix_to_vector(back_inv);
+    Matrix* front_inv_row =r_matrix_inverse(front_row);
+    Matrix* back_inv_row  =r_matrix_inverse(back_row);
+	//xorig link to front_inv and back_inv
+	Matrix* x_orig[] =
+	{
+		front_inv_row,
+		back_inv_row
+	};
+#if defined( MODE_DEBUG ) && 0
+	printf("Front inverse vector:\n");
+	matrix_print(front_inv_row);
+	printf("Back inverse vector:\n");
+	matrix_print(back_inv_row);
+#endif
     //mode
     double mode_front = matrix_mode_row(front_inv_row, 0);
     double mode_back  = matrix_mode_row(back_inv_row, 0);
 	//mode is the zero of all values
-	Matrix* x[]=
+	Matrix* x[] =
 	{
 		matrix_alloc(front_inv_row->w,1),
 		matrix_alloc(back_inv_row->w,1)
 	};
 	//..
-	for (int i = 0; i != front_inv_row->w; ++i)
+	for (size_t i = 0; i != front_inv_row->w; ++i)
 	{
-		if (matrix_get(front_inv_row, x, 0) < mode_front)
-			matrix_set(x[0], x, 0, 0);
+		if (matrix_get(front_inv_row, i, 0) < mode_front)
+			matrix_set(x[0], i, 0, 0);
 		else
-			matrix_set(x[0], x, 0, matrix_get(x[0], x, 0) - mode_front);
+			matrix_set(x[0], i, 0, matrix_get(front_inv_row, i, 0) - mode_front);
 
-		if (matrix_get(back_inv_row, x, 0) < mode_back)
-			matrix_set(x[1], x, 0, 0);
+		if (matrix_get(back_inv_row, i, 0) < mode_back)
+			matrix_set(x[1], i, 0, 0);
 		else
-			matrix_set(x[1], x, 0, matrix_get(x[1], x, 0) - mode_back);
+			matrix_set(x[1], i, 0, matrix_get(back_inv_row, i, 0) - mode_back);
 	}
-	//Processing
 
+#if defined( MODE_DEBUG ) && 0
+	printf("Front vector - mode:\n");
+	matrix_print(x[0]);
+	printf("Back vector - mode:\n");
+	matrix_print(x[1]);
+#endif
+	//Processing
+	Matrix* A_stimate     = estimate(x, nm2);
+	Matrix* A_stimate_i   = matrix_inv2x2(A_stimate);
+	Matrix* A_stimate_i_t = matrix_transpose(A_stimate_i);
+	Matrix* x_orig2		  = put_x_into_matrix_col(x_orig, x_orig[0]->w);
+	Matrix* sk			  = matrix_multiply(x_orig2, A_stimate_i_t);
+	//get mode of images
+	double	new_mode_front = matrix_mode_row(sk, 0);
+	double	new_mode_back  = matrix_mode_row(sk, 1);
+#if defined( MODE_DEBUG ) && 0
+	printf("new_mode_front: %g, new_mode_back:%g", new_mode_front, new_mode_back);
+	//printf("x_orig2\n");
+	//matrix_print(x_orig2);
+	printf("A_stimate\n");
+	matrix_print(A_stimate);
+	printf("A_stimate_i\n");
+	matrix_print(A_stimate_i);
+	printf("A_stimate_i_t\n");
+	matrix_print(A_stimate_i_t);
+#endif
+	//create matrix to apply to the images matrix
+	for (int y = 0; y != x_orig2->h; ++y)
+	{
+		matrix_set(sk, 0, y, matrix_get(sk, 0, y) + mode_front - new_mode_front);
+		matrix_set(sk, 1, y, matrix_get(sk, 1, y) + mode_back - new_mode_back);
+	}
+	//inverso colore
+	Matrix* ss1_inv = matrix_from_vector(sk, 0, nm[0], nm[1]);
+	Matrix* ss2_inv = matrix_from_vector(sk, 1, nm[0], nm[1]);
+	Matrix* ss1 = r_matrix_inverse(ss1_inv);
+	Matrix* ss2 = r_matrix_inverse(ss2_inv);
+
+	ImageMarge output;
+	output.front = ss1;
+	output.back  = ss2;
+	//free all
+	matrix_free(ss1_inv);
+	matrix_free(ss2_inv);
+	matrix_free(sk);
+	matrix_free(A_stimate_i_t);
+	matrix_free(A_stimate_i);
+	matrix_free(A_stimate);
+	matrix_free(x[0]);
+	matrix_free(x[1]);
+	matrix_free(front_inv_row);
+	matrix_free(back_inv_row);
+	matrix_free(front_row);
+	matrix_free(back_row);
+	//return
+	return output;
+#if 0
 	//matrix
 	Matrix* A = matrix_alloc(2, 2);
 	matrix_set(A, 0, 0, 0.7);    matrix_set(A, 1, 0, 0.3);
@@ -461,18 +585,19 @@ void split_images(ImageMarge images,  size_t nm[2], size_t nm2)
     Matrix* front_inv_mode = matrix_from_vector(front_inv_row_mode, 0, (int)nm[0], (int)nm[1]);
     Matrix* back_inv_mode = matrix_from_vector(back_inv_row_mode, 0,   (int)nm[0], (int)nm[1]);
     //debug
-#ifdef MODE_DEBUG
+	#ifdef MODE_DEBUG
     RGB_Matrix front_image =
-    RGB_Matrix_init(matrix_copy(front_inv_mode),
+	rgb_matrix_init(matrix_copy(front_inv_mode),
                     matrix_copy(front_inv_mode),
                     matrix_copy(front_inv_mode));
     rgb_matrix_to_tga_file("__front_zero.tga", front_image);
     
     RGB_Matrix back_image =
-    RGB_Matrix_init(matrix_copy(back_inv_mode),
+	rgb_matrix_init(matrix_copy(back_inv_mode),
                     matrix_copy(back_inv_mode),
                     matrix_copy(back_inv_mode));
     rgb_matrix_to_tga_file("__back_zero.tga", back_image);
+	#endif
 #endif
 }
 
@@ -481,41 +606,58 @@ int main(int argc,const char* argv[])
     //paths
     const char* path_image[] =
     {
-        "assets/img11.tga",
-        "assets/img12.tga"
+        "assets/mistura_recto.tga",
+        "assets/mistura_verso.tga"
     };
     //load images
-    RGB_Matrix image[] =
-    {
-        rgb_matrix_from_tga_file(path_image[0]),
-        rgb_matrix_from_tga_file(path_image[1])
-    };
+	RGB_Matrix image[2];
+	image[0] = rgb_matrix_from_tga_file(path_image[0]);
+	image[1] = rgb_matrix_from_tga_file(path_image[1]);
     //assets
-    assert(image[0].matrix_r->w == image[0].matrix_r->h &&
-           image[0].matrix_r->w == image[1].matrix_r->w &&
-           image[0].matrix_r->h == image[1].matrix_r->h);
+    assert(image[0].matrix_r->w == image[1].matrix_r->w &&
+           image[0].matrix_r->h == image[1].matrix_r->h );
     //sizes
     size_t size[]=
     {
         image[0].matrix_r->w,
         image[0].matrix_r->h
     };
+	////////////////////////////////////////////////////////////////////////////////////
     //elements count
     size_t elements = size[0] * size[1];
-    //make arguments
-    Matrix* colors[] = { image[0].matrix_r, image[1].matrix_r };
-	ImageMarge  images = false ? marge_images_init(colors) : marge_images(colors);
+	//marge images?
+	bool b_not_merge = true;
 	//call split images (red channel)
-    split_images(images, size, elements);
+	Matrix*     colors_r[] = { image[0].matrix_r, image[1].matrix_r };
+	ImageMarge  images_r = b_not_merge ? marge_images_init(colors_r) : marge_images(colors_r);
+				images_r = split_images(images_r, size, elements);
+	//call split images (green channel)
+    Matrix*     colors_g[] = { image[0].matrix_g, image[1].matrix_g };
+	ImageMarge  images_g = b_not_merge ? marge_images_init(colors_g) : marge_images(colors_g);
+				images_g = split_images(images_g, size, elements);
+	//call split images (blue channel)
+	Matrix*     colors_b[] = { image[0].matrix_b, image[1].matrix_b };
+	ImageMarge  images_b = b_not_merge ? marge_images_init(colors_b) : marge_images(colors_b);
+				images_b = split_images(images_b, size, elements);
+	////////////////////////////////////////////////////////////////////////////////////
+	RGB_Matrix front_image = rgb_matrix_init(images_r.front, 
+											 images_g.front,
+										 	 images_b.front);
+	rgb_matrix_to_tga_file("out_front.tga", front_image);
+
+	RGB_Matrix back_image = rgb_matrix_init(images_r.back,
+										    images_g.back,
+											images_b.back);
+	rgb_matrix_to_tga_file("out_back.tga", back_image);
     return 0;
 }
 
 #elif 0
-double deleteLT128(double value, int x, int y,Matrix* in)
+double deleteLT128(double value, size_t x, size_t y,Matrix* in)
 {
     return value < 128 ?  0 : value;
 }
-double deleteGT128(double value, int x, int y,Matrix* in)
+double deleteGT128(double value, size_t x, size_t y,Matrix* in)
 {
     return value > 128 ?  0 : value;
 }
