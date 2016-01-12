@@ -71,12 +71,18 @@ void matrix_put_from_sub_matrix(Matrix* dest,const Matrix* source,size_t pos[2])
 void matrix_clamp_inplace(const Matrix* a, double min, double max);
 //Media moda
 double matrix_mode_row(const Matrix* a,size_t row);
+//Media moda
+double matrix_mode_col(const Matrix* a,size_t col);
 //fattorizazione di cholesky
 Matrix* matrix_cholesky_factorization(const Matrix* a);
 //matrix to vector
 Matrix* matrix_to_vector(const Matrix* in);
+//matrix to vector
+Matrix* matrix_to_vector_col(const Matrix* in);
 //sub matrix to vector
 Matrix* matrix_sub_to_vector(const Matrix* in,size_t pos[2],size_t size[2]);
+//sub matrix to vector
+Matrix* matrix_sub_to_vector_col(const Matrix* in,size_t pos[2],size_t size[2]);
 //row vector to matrix
 Matrix* matrix_from_vector(const Matrix* in, size_t col,size_t w,size_t h);
 //Moltiplicazione Matrice per scalare

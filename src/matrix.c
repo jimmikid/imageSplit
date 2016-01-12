@@ -78,36 +78,20 @@ Matrix* matrix_sqrt(const Matrix* in)
 	}
 	return output;
 }
-//merge sort
-static void merge_aux(double *a, size_t n, size_t m)
+int compare_matrix_values(const void *x, const void *y)
 {
-	size_t i, j, k;
-	double *x = malloc(n * sizeof(double));
-	for (i = 0, j = m, k = 0; k < n; k++) 
-	{
-		x[k] = j == n ? a[i++]
-			: i == m ? a[j++]
-			: a[j] < a[i] ? a[j++]
-			: a[i++];
-	}
-	for (i = 0; i < n; i++) 
-	{
-		a[i] = x[i];
-	}
-	free(x);
+    double xx = *(double*)x;
+    double yy = *(double*)y;
+    if (xx < yy) return -1;
+    if (xx > yy) return  1;
+    return 0;
 }
-static void merge_sort_aux(double *a, size_t n)
-{
-	if (n < 2) return;
-	size_t m = n / 2;
-	merge_sort_aux(a, m);
-	merge_sort_aux(a + m, n - m);
-	merge_aux(a, n, m);
-}
-
 static void merge_sort(Matrix* matrix, size_t col)
 {
-	merge_sort_aux(matrix->buffer[col], matrix->h);
+    qsort(matrix->buffer[col],
+          matrix->h,
+          sizeof(double),
+          compare_matrix_values);
 }
 //Media moda
 double matrix_mode_row(const Matrix* a,size_t row)
@@ -129,6 +113,53 @@ double matrix_mode_row(const Matrix* a,size_t row)
     size_t tmp_count  = 0;
     double tmp_output = matrix_get(tmp_m,0,0);
     
+    for(size_t y=1;y!=tmp_m->h;++y)
+    {
+        if( tmp_output == matrix_get(tmp_m,0,y) )
+        {
+            ++tmp_count;
+        }
+        else
+        {
+            if( tmp_count > count )
+            {
+                count  = tmp_count;
+                output = tmp_output;
+            }
+            //release
+            tmp_count  = 1;
+            tmp_output = matrix_get(tmp_m,0,y);
+        }
+    }
+    //last case
+    if( tmp_count > count )
+    {
+        count  = tmp_count;
+        output = tmp_output;
+    }
+    //free
+    matrix_free(tmp_m);
+    //return
+    return output;
+}
+
+//Media moda
+double matrix_mode_col(const Matrix* a,size_t col)
+{
+    //assert...
+    assert(a->h);
+    //alloc
+    Matrix* tmp_m = matrix_alloc(1, a->h);
+    //copy
+    memcpy(tmp_m->buffer[0],a->buffer[col],sizeof(double)*a->h);
+    //sort
+    merge_sort(tmp_m,0);
+    //comput mode
+    size_t count      = 1;
+    double output     = matrix_get(tmp_m,0,0);
+    size_t tmp_count  = 0;
+    double tmp_output = matrix_get(tmp_m,0,0);
+    //compute 
     for(size_t y=1;y!=tmp_m->h;++y)
     {
         if( tmp_output == matrix_get(tmp_m,0,y) )
@@ -274,18 +305,44 @@ Matrix* matrix_to_vector(const Matrix* in)
     
     return output;
 }
-
+//matrix to vector
+Matrix* matrix_to_vector_col(const Matrix* in)
+{
+    Matrix* output = matrix_alloc(1,in->w*in->h);
+    
+    for (size_t x = 0; x != in->w; ++x)
+    for (size_t y = 0; y != in->h; ++y)
+    {
+        matrix_set(output,  0 , y+x*in->h, matrix_get(in,x,y));
+    }
+    
+    return output;
+}
+//sub vector
 Matrix* matrix_sub_to_vector(const Matrix* in, size_t pos[2], size_t size[2])
 {
-	Matrix* output = matrix_alloc(size[0] * size[1], 1);
-
-	for (size_t x = 0; x != size[0]; ++x)
-	for (size_t y = 0; y != size[1]; ++y)
-	{    
-		matrix_set(output, y + x*size[1], 0, matrix_get(in, x + pos[0], y + pos[1]));
-	}
-
-	return output;
+    Matrix* output = matrix_alloc(size[0] * size[1], 1);
+    
+    for (size_t x = 0; x != size[0]; ++x)
+        for (size_t y = 0; y != size[1]; ++y)
+        {
+            matrix_set(output, y + x*size[1], 0, matrix_get(in, x + pos[0], y + pos[1]));
+        }
+    
+    return output;
+}
+//sub vector
+Matrix* matrix_sub_to_vector_col(const Matrix* in, size_t pos[2], size_t size[2])
+{
+    Matrix* output = matrix_alloc(1, size[0] * size[1]);
+    
+    for (size_t x = 0; x != size[0]; ++x)
+    for (size_t y = 0; y != size[1]; ++y)
+    {
+        matrix_set(output, 0, y + x*size[1], matrix_get(in, x + pos[0], y + pos[1]));
+    }
+    
+    return output;
 }
 //row vector to matrix
 Matrix* matrix_from_vector(const Matrix* in, size_t col,size_t w,size_t h)
@@ -698,10 +755,13 @@ Matrix* matrix_inv2x2(const Matrix* in)
 	double det = (matrix_get(in, 0, 0)*matrix_get(in, 1, 1)) - 
 		         (matrix_get(in, 1, 0)*matrix_get(in, 0, 1));
 
-	matrix_set(output, 0, 0, (matrix_get(in, 1, 1)) / det);
-	matrix_set(output, 1, 1, (matrix_get(in, 0, 0)) / det);
-	matrix_set(output, 0, 1, -(matrix_get(in, 1, 0)) / det);
-	matrix_set(output, 1, 0, -(matrix_get(in, 0, 1)) / det);
+    double one_on_det = 1.0/det;
+	matrix_set(output, 0, 0, (matrix_get(in, 1, 1)) * one_on_det);
+    matrix_set(output, 1, 1, (matrix_get(in, 0, 0)) * one_on_det);
+    matrix_set(output, 0, 1,-(matrix_get(in, 0, 1)) * one_on_det);
+    matrix_set(output, 1, 0,-(matrix_get(in, 1, 0)) * one_on_det);
+    //matrix_set(output, 1, 0, -(matrix_get(in, 1, 0)) / det);
+    //matrix_set(output, 0, 1, -(matrix_get(in, 0, 1)) / det);
 
 	return output;
 }

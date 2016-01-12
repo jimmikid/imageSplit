@@ -8,6 +8,8 @@
 
 #ifndef tga_loader_h
 #define tga_loader_h
+#include <stdlib.h>
+#include <stdbool.h>
 
 struct Matrix;
 typedef struct Matrix Matrix;

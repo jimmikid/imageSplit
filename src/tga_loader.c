@@ -1,8 +1,8 @@
 //
 //  tga_loader.c
-//  TesiProject
+//  ImageProcessors
 //
-//  Created by Gabriele Di Bari on 28/12/15.
+//  Created by Gianmarco Stinchi on 02/10/15.
 //  Copyright © 2015 Gianmarco Stinchi. All rights reserved.
 //
 
@@ -19,7 +19,7 @@
 #define ASPACKED( __Declaration__ ) __Declaration__ __attribute__((packed))
 #endif
 
-#define FLIP_IMAGE 0
+#define FLIP_IMAGE 1
 typedef unsigned char Byte;
 
 ASPACKED(struct TgaHeader
@@ -101,7 +101,7 @@ RGB_Matrix rgb_matrix_from_tga_file(const char* filepath)
             //pixel[1] G
             //pixel[2] R
             //pixel[3] A
-#if 0
+#if FLIP_IMAGE
 			matrix_set(output.matrix_r, x, header.height - y - 1, ((double)pixel[2])/*/255.0*/);
 			matrix_set(output.matrix_g, x, header.height - y - 1, ((double)pixel[1])/*/255.0*/);
 			matrix_set(output.matrix_b, x, header.height - y - 1, ((double)pixel[0])/*/255.0*/); 

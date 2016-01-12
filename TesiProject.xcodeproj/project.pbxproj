@@ -7,9 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E06C7B221C44F92200A7D4AB /* split_image.c in Sources */ = {isa = PBXBuildFile; fileRef = E0E7CEDA1C44F3790019176A /* split_image.c */; };
 		E0BBA6881C31888300FA5945 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = E0BBA6861C31888300FA5945 /* main.c */; };
 		E0BBA6891C31888300FA5945 /* matrix.c in Sources */ = {isa = PBXBuildFile; fileRef = E0BBA6871C31888300FA5945 /* matrix.c */; };
 		E0BBA68D1C31907D00FA5945 /* tga_loader.c in Sources */ = {isa = PBXBuildFile; fileRef = E0BBA68C1C31907D00FA5945 /* tga_loader.c */; };
+		E0E7CEE01C44F4C10019176A /* correct_color.c in Sources */ = {isa = PBXBuildFile; fileRef = E0E7CEDF1C44F4C10019176A /* correct_color.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -38,6 +40,11 @@
 		E0BBA68A1C318F5100FA5945 /* rosso.pgm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = rosso.pgm; sourceTree = "<group>"; };
 		E0BBA68B1C31900400FA5945 /* tga_loader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tga_loader.h; sourceTree = "<group>"; };
 		E0BBA68C1C31907D00FA5945 /* tga_loader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tga_loader.c; sourceTree = "<group>"; };
+		E0E7CED91C44F31D0019176A /* split_image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = split_image.h; sourceTree = "<group>"; };
+		E0E7CEDA1C44F3790019176A /* split_image.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = split_image.c; sourceTree = "<group>"; };
+		E0E7CEDB1C44F3C80019176A /* old.correct_color.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = old.correct_color.c; sourceTree = "<group>"; };
+		E0E7CEDF1C44F4C10019176A /* correct_color.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = correct_color.c; sourceTree = "<group>"; };
+		E0E7CEE11C44F4E10019176A /* correct_color.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = correct_color.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,7 +94,9 @@
 			isa = PBXGroup;
 			children = (
 				E0BBA6841C31888300FA5945 /* matrix.h */,
+				E0E7CED91C44F31D0019176A /* split_image.h */,
 				E0BBA68B1C31900400FA5945 /* tga_loader.h */,
+				E0E7CEE11C44F4E10019176A /* correct_color.h */,
 			);
 			path = include;
 			sourceTree = "<group>";
@@ -98,6 +107,9 @@
 				E0BBA6861C31888300FA5945 /* main.c */,
 				E0BBA6871C31888300FA5945 /* matrix.c */,
 				E0BBA68C1C31907D00FA5945 /* tga_loader.c */,
+				E0E7CEDA1C44F3790019176A /* split_image.c */,
+				E0E7CEDF1C44F4C10019176A /* correct_color.c */,
+				E0E7CEDB1C44F3C80019176A /* old.correct_color.c */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -161,6 +173,8 @@
 				E0BBA68D1C31907D00FA5945 /* tga_loader.c in Sources */,
 				E0BBA6891C31888300FA5945 /* matrix.c in Sources */,
 				E0BBA6881C31888300FA5945 /* main.c in Sources */,
+				E0E7CEE01C44F4C10019176A /* correct_color.c in Sources */,
+				E06C7B221C44F92200A7D4AB /* split_image.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
