@@ -1,6 +1,6 @@
 //
 //  tga_loader.h
-//  TesiProject
+//  clean-merge-app
 //
 //  Created by Gianmarco Stinchi on 28/12/15.
 //  Copyright © 2015 Gianmarco Stinchi. All rights reserved.
@@ -33,7 +33,7 @@ RGB_Matrix rgb_matrix_sub(RGB_Matrix rgb_matrix, size_t pos[2], size_t size[2]);
 void rgb_matrix_put_from_sub_matrix(RGB_Matrix dest,const RGB_Matrix source,size_t pos[2]);
 void rgb_matrix_clamp_inplace(RGB_Matrix rgb_matrix, double min, double max);
 bool rgb_matrix_to_tga_file(const char* filepath,RGB_Matrix rgb_matrix);
-void matrix_rgb(RGB_Matrix rgb_matrix);
+void rgb_matrix_free(RGB_Matrix rgb_matrix);
 //single channel ops
 Matrix*    r_matrix_inverse(Matrix* r_matrix);
 Matrix*    r_matrix_sub(Matrix* r_matrix, size_t pos[2], size_t size[2]);

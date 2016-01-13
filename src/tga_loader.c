@@ -1,10 +1,11 @@
 //
 //  tga_loader.c
-//  ImageProcessors
+//  clean-merge-app
 //
-//  Created by Gianmarco Stinchi on 02/10/15.
+//  Created by Gianmarco Stinchi on 28/12/15.
 //  Copyright © 2015 Gianmarco Stinchi. All rights reserved.
 //
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -308,7 +309,7 @@ RGB_Matrix rgb_matrix_sub(RGB_Matrix rgb_matrix,size_t pos[2],size_t size[2])
 	return output;
 }
 
-void matrix_rgb(RGB_Matrix rgb_matrix)
+void rgb_matrix_free(RGB_Matrix rgb_matrix)
 {
     matrix_free(rgb_matrix.matrix_r);
     matrix_free(rgb_matrix.matrix_g);

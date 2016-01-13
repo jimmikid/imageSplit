@@ -1,10 +1,11 @@
 //
 //  matrix.h
-//  ImageProcessors
+//  clean-merge-app
 //
-//  Created by Gianmarco Stinchi on 02/10/15.
+//  Created by Gianmarco Stinchi on 28/12/15.
 //  Copyright © 2015 Gianmarco Stinchi. All rights reserved.
 //
+
 
 #ifndef matrix_h
 #define matrix_h

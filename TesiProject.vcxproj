@@ -68,7 +68,18 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetName>clean-merge-app</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <TargetName>clean-merge-app</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>clean-merge-app</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>clean-merge-app</TargetName>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -127,12 +138,17 @@
     <None Include="assets\rosso.pgm" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\correct_color.c" />
     <ClCompile Include="src\main.c" />
     <ClCompile Include="src\matrix.c" />
+    <None Include="src\old.correct_color.c" />
+    <ClCompile Include="src\split_image.c" />
     <ClCompile Include="src\tga_loader.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\correct_color.h" />
     <ClInclude Include="include\matrix.h" />
+    <ClInclude Include="include\split_image.h" />
     <ClInclude Include="include\tga_loader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
