@@ -65,13 +65,16 @@ int main(int argc,const char* argv[])
 
 	////////////////////////////////////////////////////////////////////////////////////
     RGB_Matrix front_image = rgb_matrix_init(images_r.front, images_g.front, images_b.front);
-	RGB_Matrix back_image = rgb_matrix_init(images_r.back, images_g.back, images_b.back);
-	////////////////////////////////////////////////////////////////////////////////////
-    //correct_color(front_image, image[0], size, elements);
-    //correct_color(back_image, image[1], size, elements);
+    RGB_Matrix back_image = rgb_matrix_init(images_r.back, images_g.back, images_b.back);
     ////////////////////////////////////////////////////////////////////////////////////
-	rgb_matrix_to_tga_file("out_front.tga", front_image);
-	rgb_matrix_to_tga_file("out_back.tga", back_image);
+    rgb_matrix_to_tga_file("out_front.tga", front_image);
+    rgb_matrix_to_tga_file("out_back.tga", back_image);
+	////////////////////////////////////////////////////////////////////////////////////
+    correct_color(front_image, image[0], size, elements);
+    correct_color(back_image, image[1], size, elements);
+    ////////////////////////////////////////////////////////////////////////////////////
+	rgb_matrix_to_tga_file("cr_out_front.tga", front_image);
+	rgb_matrix_to_tga_file("cr_out_back.tga", back_image);
 #else
 	//paths
 	const char* path_image[] =

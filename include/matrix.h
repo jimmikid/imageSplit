@@ -50,7 +50,7 @@ Eigen2x2;
 //Allocazione dinamica del tipo matrice
 Matrix* matrix_alloc(size_t w,size_t h);
 //Alloca ed inizializza da un array di double
-Matrix* matrix_init(double* values, size_t w, size_t h);
+Matrix* matrix_init(const double* values, size_t w, size_t h);
 //create a rotation matrix
 Matrix* matrix_rotate(double alpha);
 //Alloca una matrice di identità

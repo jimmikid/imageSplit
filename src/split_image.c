@@ -11,6 +11,8 @@
 #include <matrix.h>
 #include <math.h>
 #include <float.h>
+#include <string.h>
+
 #define MODE_DEBUG
 
 ImageMarge marge_images_init(Matrix* s[2])
@@ -73,12 +75,6 @@ double compute_funz_ob_theta(Matrix* L, Matrix* x[2], size_t N, double theta)
     Matrix* U = matrix_rotate(theta);
     Matrix* A = matrix_multiply(L, U);
     //debug
-#if defined( MODE_DEBUG ) && 0
-    printf("U:\n");
-    matrix_print(U);
-    printf("A:\n");
-    matrix_print(A);
-#endif
     double sum[] =
     {
         matrix_get(A,0,0) + matrix_get(A,1,0),
@@ -342,16 +338,16 @@ Matrix* estimate(Matrix* x[2], size_t nm2)
     //compute theta
     EstimateThetaReturn estimate_t = estimate_theta_funz(L, x, nm2, theta);
     //compute U
-    Matrix* U     = matrix_rotate(estimate_t.theta);
-    Matrix* new_L = matrix_multiply(L, U);
+    Matrix* U  = matrix_rotate(estimate_t.theta);
+    Matrix* LU = matrix_multiply(L, U);
     //compute sum1/2
-    double sum1 = matrix_get(new_L, 0, 0) + matrix_get(new_L, 1, 0);
-    double sum2 = matrix_get(new_L, 0, 1) + matrix_get(new_L, 1, 1);
+    double sum1 = matrix_get(LU, 0, 0) + matrix_get(LU, 1, 0);
+    double sum2 = matrix_get(LU, 0, 1) + matrix_get(LU, 1, 1);
     //compute estimate
     double A_estimate_init[] =
     {
-        matrix_get(new_L, 0, 0)/sum1, matrix_get(new_L, 1, 0)/sum1,
-        matrix_get(new_L, 0, 1)/sum2, matrix_get(new_L, 1, 1)/sum2
+        matrix_get(LU, 0, 0)/sum1, matrix_get(LU, 1, 0)/sum1,
+        matrix_get(LU, 0, 1)/sum2, matrix_get(LU, 1, 1)/sum2
     };
     Matrix* A_estimate = matrix_init(A_estimate_init,2, 2);
     //dealloc all
@@ -365,7 +361,7 @@ Matrix* estimate(Matrix* x[2], size_t nm2)
     matrix_free(V_E_s);
     matrix_free(L);
     matrix_free(U);
-    matrix_free(new_L);
+    matrix_free(LU);
     //return matrix
     return A_estimate;
 }

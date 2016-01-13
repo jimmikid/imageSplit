@@ -32,7 +32,7 @@ Matrix* matrix_alloc(size_t w,size_t h)
     return output;
 }
 //Alloca ed inizializza da un array di double
-Matrix* matrix_init(double* values,size_t w,size_t h)
+Matrix* matrix_init(const double* values,size_t w,size_t h)
 {
     Matrix* output = matrix_alloc(w,h);
     for(size_t x=0;x!=w;++x)

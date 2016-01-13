@@ -73,8 +73,8 @@ void correct_rgb(RGB_Matrix ss,
                  */
                 
                 matrix_set(ss.matrix_r, i, j, mode_r + (c*(matrix_get(ss.matrix_r, i, j)-mode_r))/matrix_get(ss.matrix_r, i, j) );
-                matrix_set(ss.matrix_g, i, j, mode_g + (c*(matrix_get(ss.matrix_g, i, j)-mode_r))/matrix_get(ss.matrix_g, i, j) );
-                matrix_set(ss.matrix_b, i, j, mode_b + (c*(matrix_get(ss.matrix_b, i, j)-mode_r))/matrix_get(ss.matrix_b, i, j) );
+                matrix_set(ss.matrix_g, i, j, mode_g + (c*(matrix_get(ss.matrix_g, i, j)-mode_g))/matrix_get(ss.matrix_g, i, j) );
+                matrix_set(ss.matrix_b, i, j, mode_b + (c*(matrix_get(ss.matrix_b, i, j)-mode_b))/matrix_get(ss.matrix_b, i, j) );
                 
             }
         }
