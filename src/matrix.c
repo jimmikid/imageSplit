@@ -135,7 +135,6 @@ double matrix_mode_row(const Matrix* a,size_t row)
     //last case
     if( tmp_count > count )
     {
-        count  = tmp_count;
         output = tmp_output;
     }
     //free
@@ -182,7 +181,6 @@ double matrix_mode_col(const Matrix* a,size_t col)
     //last case
     if( tmp_count > count )
     {
-        count  = tmp_count;
         output = tmp_output;
     }
     //free
@@ -447,13 +445,15 @@ void matrix_free(Matrix* in)
 //legge da file gimp
 Matrix* matrix_from_gimp_file (char *filename)
 {
-    char *res = NULL;
+    char *res= NULL;
     FILE *fp  = NULL;
-    char buf[256];                      //Buffer per la lettura dei dati da file
-    size_t *dimensione;                    //allocazione di un array in memoria
-    dimensione = malloc(2*sizeof(int)); //allocazione dinamica dell'array di due elementi(quelli che verranno letti nel file)
+    
     fp = fopen(filename, "rb");          //apertura del file in lettura
     if(!fp) return NULL;
+    
+    char buf[256];                      //Buffer per la lettura dei dati da file
+    int* dimensione;                    //allocazione di un array in memoria
+    dimensione = malloc(2*sizeof(int)); //allocazione dinamica dell'array di due elementi(quelli che verranno letti nel file)
     
     while(res != NULL)
     {
