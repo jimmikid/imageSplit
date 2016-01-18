@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		E06C7B221C44F92200A7D4AB /* split_image.c in Sources */ = {isa = PBXBuildFile; fileRef = E0E7CEDA1C44F3790019176A /* split_image.c */; };
+		E08E222C1C4BF4250037BA3C /* threads.c in Sources */ = {isa = PBXBuildFile; fileRef = E08E222B1C4BF4250037BA3C /* threads.c */; };
 		E0BBA6881C31888300FA5945 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = E0BBA6861C31888300FA5945 /* main.c */; };
 		E0BBA6891C31888300FA5945 /* matrix.c in Sources */ = {isa = PBXBuildFile; fileRef = E0BBA6871C31888300FA5945 /* matrix.c */; };
 		E0BBA68D1C31907D00FA5945 /* tga_loader.c in Sources */ = {isa = PBXBuildFile; fileRef = E0BBA68C1C31907D00FA5945 /* tga_loader.c */; };
@@ -31,6 +32,8 @@
 		E012C0731C32EB17006A0B56 /* img11.tga */ = {isa = PBXFileReference; lastKnownFileType = file; path = img11.tga; sourceTree = "<group>"; };
 		E012C0741C32EB17006A0B56 /* img12.tga */ = {isa = PBXFileReference; lastKnownFileType = file; path = img12.tga; sourceTree = "<group>"; };
 		E012C0751C32EB17006A0B56 /* test2.tga */ = {isa = PBXFileReference; lastKnownFileType = file; path = test2.tga; sourceTree = "<group>"; };
+		E08E222B1C4BF4250037BA3C /* threads.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = threads.c; sourceTree = "<group>"; };
+		E08E222D1C4BF4320037BA3C /* threads.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = threads.h; sourceTree = "<group>"; };
 		E0BBA6761C31881200FA5945 /* TesiProject */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TesiProject; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0BBA6811C31888300FA5945 /* gerace_prova.pgm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = gerace_prova.pgm; sourceTree = "<group>"; };
 		E0BBA6821C31888300FA5945 /* Homer.pgm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Homer.pgm; sourceTree = "<group>"; };
@@ -93,6 +96,7 @@
 		E0BBA6831C31888300FA5945 /* include */ = {
 			isa = PBXGroup;
 			children = (
+				E08E222D1C4BF4320037BA3C /* threads.h */,
 				E0BBA6841C31888300FA5945 /* matrix.h */,
 				E0E7CED91C44F31D0019176A /* split_image.h */,
 				E0BBA68B1C31900400FA5945 /* tga_loader.h */,
@@ -104,6 +108,7 @@
 		E0BBA6851C31888300FA5945 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				E08E222B1C4BF4250037BA3C /* threads.c */,
 				E0BBA6861C31888300FA5945 /* main.c */,
 				E0BBA6871C31888300FA5945 /* matrix.c */,
 				E0BBA68C1C31907D00FA5945 /* tga_loader.c */,
@@ -175,6 +180,7 @@
 				E0BBA6881C31888300FA5945 /* main.c in Sources */,
 				E0E7CEE01C44F4C10019176A /* correct_color.c in Sources */,
 				E06C7B221C44F92200A7D4AB /* split_image.c in Sources */,
+				E08E222C1C4BF4250037BA3C /* threads.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
