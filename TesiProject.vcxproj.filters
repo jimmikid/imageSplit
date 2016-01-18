@@ -32,6 +32,9 @@
     <None Include="assets\rosso.pgm">
       <Filter>File di risorse</Filter>
     </None>
+    <None Include="src\old.correct_color.c">
+      <Filter>File di origine</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.c">
@@ -46,10 +49,10 @@
     <ClCompile Include="src\correct_color.c">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="src\old.correct_color.c">
+    <ClCompile Include="src\split_image.c">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="src\split_image.c">
+    <ClCompile Include="src\threads.c">
       <Filter>File di origine</Filter>
     </ClCompile>
   </ItemGroup>
@@ -64,6 +67,9 @@
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="include\split_image.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\threads.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
   </ItemGroup>

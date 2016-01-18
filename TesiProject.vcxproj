@@ -141,6 +141,7 @@
     <ClCompile Include="src\correct_color.c" />
     <ClCompile Include="src\main.c" />
     <ClCompile Include="src\matrix.c" />
+    <ClCompile Include="src\threads.c" />
     <None Include="src\old.correct_color.c" />
     <ClCompile Include="src\split_image.c" />
     <ClCompile Include="src\tga_loader.c" />
@@ -150,6 +151,7 @@
     <ClInclude Include="include\matrix.h" />
     <ClInclude Include="include\split_image.h" />
     <ClInclude Include="include\tga_loader.h" />
+    <ClInclude Include="include\threads.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

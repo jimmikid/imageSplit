@@ -8,14 +8,18 @@
 
 #ifndef threads_h
 #define threads_h
+//boolean lib
+#include <stdlib.h>
+#include <stdbool.h>
 //task
-typedef void* (*task)(void*) ;
+typedef bool (*task)(void*) ;
 
 //thread
 struct thread;
 typedef struct thread thread;
 
 thread* execute_task(task function,void* context);
-void* joint(thread*);
+void* get_task_context(thread*);
+bool joint(thread*);
 
 #endif /* threads_h */

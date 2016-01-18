@@ -27,11 +27,11 @@ typedef struct context
 }
 context;
 
-void* images_split_task(void* void_ptr_ctx)
+bool images_split_task(void* void_ptr_ctx)
 {
     context* ctx = (context*)void_ptr_ctx;
     ctx->images = split_images(ctx->images, ctx->size, ctx->elements);
-    return ctx;
+	return true;
 }
 
 
@@ -50,13 +50,16 @@ thread* images_split_thread(ImageMarge images,
 
 ImageMarge images_split_join(thread* th)
 {
-    void* void_ptr_ctx=joint(th);
-    assert(void_ptr_ctx);
-    
-    context* ctx = (context*)void_ptr_ctx;
+	//get context
+	context* ctx = (context*)get_task_context(th);
+	//wait and dealloc thread
+    bool success = joint(th);
+    assert(success);
+    //copy image ptrs
     ImageMarge images = ctx->images;
-    free(ctx);
-    
+	//dealloc context
+	free(ctx);
+	//dealloc images
     return images;
 }
 
