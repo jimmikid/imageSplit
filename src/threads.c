@@ -30,20 +30,42 @@
 #endif
 
 
+        typedef struct args
+        {
+            thread* m_thread;
+            void*   m_context;
+            task    m_task;
+        }
+        args;
+
+        void* __wrap_function(void* ptr_args)
+        {
+            args* v_args = (args*)ptr_args;
+            bool ret = v_args->m_task(v_args->m_context);
+            return ret ?  (void*)1 : NULL;
+        }
+
         struct thread
         {
             pthread_t m_thread;
+            args*  m_args;
         };
 
         thread* execute_task(task function,void* context)
         {
             //output
-            thread* th =  (thread*)malloc(sizeof(struct thread));
+            thread* th = (thread*)malloc(sizeof(struct thread));
+            //alloc args
+            th->m_args = (args*)malloc(sizeof(struct args));
+            //init args
+            th->m_args->m_thread = th;
+            th->m_args->m_context = context;
+            th->m_args->m_task = function;
             //...
             if(pthread_create(&th->m_thread,
                               NULL,
-                              function,
-                              context)  != 0)
+                              __wrap_function,
+                              th->m_args)  != 0)
             {
                 free(th);
                 return NULL;
@@ -52,13 +74,17 @@
             return th;
         }
 
-        void* joint(thread* th)
+        void* get_task_context(thread* th)
+        {
+            return th->m_args->m_context;
+        }
+
+        bool joint(thread* th)
         {
             void* return_value = NULL;
             
             //get error
             int error = pthread_join(th->m_thread, &return_value);
-            
             
             
             if (error != 0)
@@ -70,10 +96,17 @@
                     case ESRCH:    printf("ESRCH\n");   break;
                     default: break;
                 }
-                return NULL;
+                return false;
             }
             
-            return return_value;
+            //free thread
+            pthread_cancel(th->m_thread);
+            
+            //free structure
+            free(th->m_args);
+            free(th);
+            
+            return return_value ? true : false;
         }
 #else 
 
