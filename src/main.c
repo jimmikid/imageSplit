@@ -149,8 +149,8 @@ int main(int argc, const char* argv[])
 		printf("%s [options]\n", argv[0]);
         printf("Options:\n");
         printf("\t--help/-h help\n");
-        printf("\t--limit/-l help\n");
-        printf("\t--parallel/-p <integer> help\n");
+        printf("\t--limit/-l <integer>\n");
+        printf("\t--parallel/-p parallel execution\n");
 		printf("\t--clean/-c <path image 1> <path image 2> <path output image 1> <path ouput image 2> clean a merged images\n");
 		printf("\t--merge/-m <path image 1> <path image 2> <path output image 1> <path ouput image 2> merge images\n");
 	}
