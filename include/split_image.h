@@ -19,6 +19,9 @@ typedef struct ImageMarge
 }
 ImageMarge;
 
+
+void set_loop_limit(long loop_limit);
+long get_loop_limit();
 ImageMarge split_images(ImageMarge images,  size_t nm[2], size_t nm2);
 ImageMarge marge_images_init(Matrix* s[2]);
 ImageMarge marge_images(Matrix* s[2]);

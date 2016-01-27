@@ -75,6 +75,7 @@ int main(int argc, const char* argv[])
 	bool b_merge           = false;
 	bool b_clean           = false;
     bool b_parallel        = false;
+    long l_loop_limit      = get_loop_limit();
 	const char* path_images_merge[] = { NULL, NULL };
 	const char* path_images_merge_output[] = { NULL, NULL };
 	const char* path_images_clean[] = { NULL, NULL };
@@ -89,6 +90,16 @@ int main(int argc, const char* argv[])
         else if (compare_str(argv[i], "-p") || compare_str(argv[i], "--parallel"))
         {
             b_parallel = true;
+        }
+        else if (compare_str(argv[i], "-l") || compare_str(argv[i], "--limit"))
+        {
+            if (argc <= i + 1)
+            {
+                b_valid_arguments = false;
+                break;
+            }
+            l_loop_limit = atol(argv[i + 1]);
+            i += 1;
         }
 		else if (compare_str(argv[i], "-m") || compare_str(argv[i], "--merge"))
 		{
@@ -130,14 +141,16 @@ int main(int argc, const char* argv[])
 		printf("Not valid arguments\n");
 		return -1;
 	}
-
+    //set loop limit
+    set_loop_limit(l_loop_limit);
 	//execute commands
 	if (b_show_help)
 	{
 		printf("%s [options]\n", argv[0]);
         printf("Options:\n");
         printf("\t--help/-h help\n");
-        printf("\t--parallel/-p help\n");
+        printf("\t--limit/-l help\n");
+        printf("\t--parallel/-p <integer> help\n");
 		printf("\t--clean/-c <path image 1> <path image 2> <path output image 1> <path ouput image 2> clean a merged images\n");
 		printf("\t--merge/-m <path image 1> <path image 2> <path output image 1> <path ouput image 2> merge images\n");
 	}

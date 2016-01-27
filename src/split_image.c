@@ -15,6 +15,18 @@
 
 #define MODE_DEBUG
 
+static long s_loop_limit = 10000;
+
+void set_loop_limit(long loop_limit)
+{
+    s_loop_limit = loop_limit;
+}
+
+long get_loop_limit()
+{
+    return s_loop_limit;
+}
+
 ImageMarge marge_images_init(Matrix* s[2])
 {
     ImageMarge output;
@@ -147,9 +159,9 @@ EstimateThetaReturn estimate_theta_funz(Matrix* L, Matrix* x[2], size_t nm2, dou
         funz_ob[i] = compute_funz_ob_theta(L, x, nm2, theta_v[i]);
     }
     //loop count
-    int loop_count = 1;
+    long loop_count = 1;
     //..
-    while (true)
+    while (loop_count <= s_loop_limit)
     {
         nn = funz_ob[1];
         
